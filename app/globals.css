@@ -5,75 +5,81 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 255, 255, 255;
-  --background-end-rgb: 255, 255, 255;
+    --foreground-rgb: 0, 0, 0;
+    --background-start-rgb: 255, 255, 255;
+    --background-end-rgb: 255, 255, 255;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 10, 10, 10;
-    --background-end-rgb: 10, 10, 10;
-  }
+    :root {
+        --foreground-rgb: 255, 255, 255;
+        --background-start-rgb: 10, 10, 10;
+        --background-end-rgb: 10, 10, 10;
+    }
 }
 
 @layer base {
-  * {
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
-  }
+    * {
+        box-sizing: border-box;
+        padding: 0;
+        margin: 0;
+    }
 
-  html,
-  body {
-    max-width: 100vw;
-    overflow-x: hidden;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  }
+    html,
+    body {
+        max-width: 100vw;
+        overflow-x: hidden;
+        font-family:
+            'Inter',
+            -apple-system,
+            BlinkMacSystemFont,
+            sans-serif;
+    }
 
-  body {
-    color: rgb(var(--foreground-rgb));
-    background: rgb(var(--background-start-rgb));
-    min-height: 100vh;
-  }
+    body {
+        color: rgb(var(--foreground-rgb));
+        background: rgb(
+            var(--background-start-rgb)
+        );
+        min-height: 100vh;
+    }
 
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
+    a {
+        color: inherit;
+        text-decoration: none;
+    }
 }
 
 @layer components {
-  .container {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-  }
-  
-  @media (max-width: 768px) {
     .container {
-      padding: 0 1rem;
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
     }
-  }
+
+    @media (max-width: 768px) {
+        .container {
+            padding: 0 1rem;
+        }
+    }
 }
 
 @layer utilities {
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 10px;
-  }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 10px;
+    }
 
-  ::-webkit-scrollbar-track {
-    background: #f1f1f1;
-  }
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
 
-  ::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 5px;
-  }
+    ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 5px;
+    }
 
-  ::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
 }

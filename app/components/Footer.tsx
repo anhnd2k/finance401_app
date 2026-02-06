@@ -1,7 +1,13 @@
 import Link from 'next/link';
-import { 
-    Linkedin, Instagram, Twitter, Facebook, 
-    MessageSquare, Rss, Github, ExternalLink 
+import {
+    Linkedin,
+    Instagram,
+    Twitter,
+    Facebook,
+    MessageSquare,
+    Rss,
+    Github,
+    ExternalLink,
 } from 'lucide-react';
 
 export default function Footer() {
@@ -29,22 +35,50 @@ export default function Footer() {
     };
 
     const socialLinks = [
-        { icon: Linkedin, name: 'linkedin', href: '#' },
-        { icon: Instagram, name: 'instagram', href: '#' },
-        { icon: Twitter, name: 'x (twitter)', href: '#' },
-        { icon: MessageSquare, name: 'bluesky', href: '#' },
-        { icon: Facebook, name: 'facebook', href: '#' },
-        { icon: Rss, name: 'rss feed', href: '#' },
-        { icon: Github, name: 'github', href: '#' },
+        {
+            icon: Linkedin,
+            name: 'linkedin',
+            href: '#',
+        },
+        {
+            icon: Instagram,
+            name: 'instagram',
+            href: '#',
+        },
+        {
+            icon: Twitter,
+            name: 'x (twitter)',
+            href: '#',
+        },
+        {
+            icon: MessageSquare,
+            name: 'bluesky',
+            href: '#',
+        },
+        {
+            icon: Facebook,
+            name: 'facebook',
+            href: '#',
+        },
+        {
+            icon: Rss,
+            name: 'rss feed',
+            href: '#',
+        },
+        {
+            icon: Github,
+            name: 'github',
+            href: '#',
+        },
     ];
 
     return (
-        <footer className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-auto">
+        <footer className="mt-auto border-t border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
             <div className="container mx-auto px-4 py-12">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
                     {/* Explore Section */}
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                             Học...
                         </h3>
                         {/* <ul className="space-y-2">
@@ -63,8 +97,8 @@ export default function Footer() {
 
                     {/* Resources Section */}
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
-                            Học nữa... 
+                        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                            Học nữa...
                         </h3>
                         {/* <ul className="space-y-2">
                             {footerLinks.resources.map((link) => (
@@ -82,7 +116,7 @@ export default function Footer() {
 
                     {/* Company Section */}
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                             Học mãi...
                         </h3>
                         {/* <ul className="space-y-2">
@@ -101,20 +135,28 @@ export default function Footer() {
 
                     {/* Social Links Section */}
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                             Follow Finance401
                         </h3>
-                        <div className="flex flex-wrap gap-3 mb-8">
-                            {socialLinks.map((social) => (
-                                <a
-                                    key={social.name}
-                                    href={social.href}
-                                    className="p-2 bg-gray-200 dark:bg-gray-800 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
-                                    aria-label={social.name}
-                                >
-                                    <social.icon className="w-5 h-5" />
-                                </a>
-                            ))}
+                        <div className="mb-8 flex flex-wrap gap-3">
+                            {socialLinks.map(
+                                (social) => (
+                                    <a
+                                        key={
+                                            social.name
+                                        }
+                                        href={
+                                            social.href
+                                        }
+                                        className="rounded-lg bg-gray-200 p-2 transition-colors hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                        aria-label={
+                                            social.name
+                                        }
+                                    >
+                                        <social.icon className="h-5 w-5" />
+                                    </a>
+                                )
+                            )}
                         </div>
 
                         {/* Hosting Partners */}
@@ -146,8 +188,8 @@ export default function Footer() {
                 </div>
 
                 {/* Copyright */}
-                <div className="mt-12 pt-8 border-t border-gray-300 dark:border-gray-700 text-center">
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">
+                <div className="mt-12 border-t border-gray-300 pt-8 text-center dark:border-gray-700">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                         © Finance401 2026
                     </p>
                 </div>
