@@ -79,7 +79,10 @@ export default function Footer() {
                     {/* Explore Section */}
                     <div>
                         <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                            Học...
+                            fdsjsdf faskjflads
+                            faskfsdd Họcdfdsk
+                            afsajf fkaflakjlkdfjla
+                            ...
                         </h3>
                         {/* <ul className="space-y-2">
                             {footerLinks.company.map((link) => (
@@ -117,7 +120,8 @@ export default function Footer() {
                     {/* Company Section */}
                     <div>
                         <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                            Học mãi...
+                            Học mãi... fd
+                            sdfjksdfl
                         </h3>
                         {/* <ul className="space-y-2">
                             {footerLinks.company.map((link) => (
