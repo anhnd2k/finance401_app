@@ -3,9 +3,9 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 export const metadata = {
-    title: 'Codrops - Creative Hub & Webzibition',
+    title: 'Finance 401, where I note anything I learned about Finance',
     description:
-        'A growing showcase of Codrops originals and hand-picked demos from the creative web.',
+        'A personal blog documenting my journey and insights in the world of Finance.',
 };
 
 import React from 'react';
@@ -18,10 +18,12 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className="flex min-h-screen flex-col bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
-                <Header />
-                <main className="flex-grow">
-                    {children}
-                </main>
+                <div className="min-h-screen">
+                    <Header />
+                    <main className="flex-grow">
+                        {children}
+                    </main>
+                </div>
                 <Footer />
             </body>
         </html>
