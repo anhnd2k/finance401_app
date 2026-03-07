@@ -73,72 +73,13 @@ export default function Footer() {
     ];
 
     return (
-        <footer className="mt-auto border-t border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
+        <footer className="mt-auto border-t">
             <div className="container mx-auto px-4 py-12">
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-                    {/* Explore Section */}
-                    <div>
-                        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                            fdsjsdf faskjflads
-                            faskfsdd Họcdfdsk
-                            afsajf fkaflakjlkdfjla
-                            ...
-                        </h3>
-                        {/* <ul className="space-y-2">
-                            {footerLinks.company.map((link) => (
-                                <li key={link.name}>
-                                    <Link
-                                        href={link.href}
-                                        className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white capitalize transition-colors"
-                                    >
-                                        {link.name}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul> */}
-                    </div>
+                {/* <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4"> */}
+                {/* Explore Section */}
 
-                    {/* Resources Section */}
-                    <div>
-                        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                            Học nữa...
-                        </h3>
-                        {/* <ul className="space-y-2">
-                            {footerLinks.resources.map((link) => (
-                                <li key={link.name}>
-                                    <Link
-                                        href={link.href}
-                                        className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white capitalize transition-colors"
-                                    >
-                                        {link.name}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul> */}
-                    </div>
-
-                    {/* Company Section */}
-                    <div>
-                        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                            Học mãi... fd
-                            sdfjksdfl
-                        </h3>
-                        {/* <ul className="space-y-2">
-                            {footerLinks.company.map((link) => (
-                                <li key={link.name}>
-                                    <Link
-                                        href={link.href}
-                                        className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white capitalize transition-colors"
-                                    >
-                                        {link.name}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul> */}
-                    </div>
-
-                    {/* Social Links Section */}
-                    <div>
+                {/* Social Links Section */}
+                {/* <div>
                         <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                             Follow Finance401
                         </h3>
@@ -162,37 +103,11 @@ export default function Footer() {
                                 )
                             )}
                         </div>
-
-                        {/* Hosting Partners */}
-                        {/* <div className="space-y-4">
-                            <div>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                  Proudly hosted by
-                                </p>
-                                <a 
-                                    href="#" 
-                                    className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline font-medium"
-                                >
-                  Liquid Web <ExternalLink className="w-3 h-3 ml-1" />
-                                </a>
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                  Content delivered by
-                                </p>
-                                <a 
-                                    href="#" 
-                                    className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline font-medium"
-                                >
-                  @keycdn <ExternalLink className="w-3 h-3 ml-1" />
-                                </a>
-                            </div>
-                        </div> */}
-                    </div>
-                </div>
+                    </div> */}
+                {/* </div> */}
 
                 {/* Copyright */}
-                <div className="mt-12 border-t border-gray-300 pt-8 text-center dark:border-gray-700">
+                <div className="mt-5 text-center">
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                         © Finance401 2026
                     </p>

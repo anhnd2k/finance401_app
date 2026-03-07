@@ -1,12 +1,7 @@
-export default function DashboardLayout({
+export default function AboutLayout({
     children,
-}: Readonly<{
+}: {
     children: React.ReactNode;
-}>) {
-    return (
-        <div>
-            <h2>About Sidebar</h2>
-            <div>{children}</div>
-        </div>
-    );
+}) {
+    return <>{children}</>;
 }
