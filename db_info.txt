@@ -1,0 +1,6 @@
+-- db postgres
+-- host: 103.200.21.209
+-- port: 5433
+
+-- user: anhnh_dev
+-- pass: Mira@2026
