@@ -11,21 +11,21 @@ const eslintConfig = defineConfig([
     ...nextTs,
     prettier,
     // Override default ignores of eslint-config-next.
-    {
-        rules: {
-            // 4 spaces indent
-            indent: [
-                'error',
-                4,
-                {
-                    SwitchCase: 1,
-                    ignoredNodes: [
-                        'ConditionalExpression',
-                    ],
-                },
-            ],
-        },
-    },
+    // {
+    //     rules: {
+    //         // 4 spaces indent
+    //         indent: [
+    //             'error',
+    //             4,
+    //             {
+    //                 SwitchCase: 1,
+    //                 ignoredNodes: [
+    //                     'ConditionalExpression',
+    //                 ],
+    //             },
+    //         ],
+    //     },
+    // },
 
     globalIgnores([
         // Default ignores of eslint-config-next:

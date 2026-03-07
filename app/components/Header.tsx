@@ -20,24 +20,20 @@ export default function Header() {
     const [searchQuery, setSearchQuery] =
         useState('');
 
-    // Kiểm tra theme từ localStorage và system preference
+    // Sync state and class with localStorage / device preference
     useEffect(() => {
         const isDark =
-            localStorage.getItem('darkMode') ===
-                'true' ||
+            localStorage.getItem('darkMode') === 'true' ||
             (!('darkMode' in localStorage) &&
                 window.matchMedia(
                     '(prefers-color-scheme: dark)'
                 ).matches);
 
+        setDarkMode(isDark);
         if (isDark) {
-            document.documentElement.classList.add(
-                'dark'
-            );
+            document.documentElement.classList.add('dark');
         } else {
-            document.documentElement.classList.remove(
-                'dark'
-            );
+            document.documentElement.classList.remove('dark');
         }
     }, []);
 

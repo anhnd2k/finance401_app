@@ -1,18 +1,15 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-    /* config options here */
-    output: 'standalone', // QUAN TRỌNG: Tạo standalone build cho Docker
+    output: 'standalone',
     compress: true,
     reactStrictMode: true,
 
-    // Image optimization
     images: {
         formats: ['image/avif', 'image/webp'],
-        domains: [], // Thêm domain nếu cần load ảnh từ external
+        remotePatterns: [{ protocol: 'https', hostname: '**' }],
     },
 
-    // Security headers (sẽ được Nginx xử lý, nhưng thêm cho chắc)
     async headers() {
         return [
             {
