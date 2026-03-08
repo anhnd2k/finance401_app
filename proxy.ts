@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const COOKIE_NAME = 'f401_session';
+const LOCALE_COOKIE = 'f401_lang';
 
 async function verifySession(token: string): Promise<boolean> {
     try {
@@ -34,20 +35,34 @@ async function verifySession(token: string): Promise<boolean> {
 
 export async function proxy(req: NextRequest) {
     const { pathname } = req.nextUrl;
-    if (
-        pathname.startsWith('/admin') &&
-        pathname !== '/admin/login'
-    ) {
+
+    // Handle /en locale prefix: rewrite to base path and set locale cookie + header
+    if (pathname === '/en' || pathname.startsWith('/en/')) {
+        const newPath = pathname === '/en' ? '/' : pathname.slice(3);
+        const newHeaders = new Headers(req.headers);
+        newHeaders.set('x-locale', 'en');
+        const response = NextResponse.rewrite(new URL(newPath || '/', req.url), {
+            request: { headers: newHeaders },
+        });
+        response.cookies.set(LOCALE_COOKIE, 'en', {
+            path: '/',
+            maxAge: 365 * 24 * 60 * 60,
+            sameSite: 'lax',
+        });
+        return response;
+    }
+
+    // Admin auth guard
+    if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
         const token = req.cookies.get(COOKIE_NAME)?.value;
         if (!token || !(await verifySession(token))) {
-            return NextResponse.redirect(
-                new URL('/admin/login', req.url)
-            );
+            return NextResponse.redirect(new URL('/admin/login', req.url));
         }
     }
+
     return NextResponse.next();
 }
 
 export const config = {
-    matcher: ['/admin/:path*'],
+    matcher: ['/admin/:path*', '/en', '/en/:path*'],
 };

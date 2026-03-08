@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function NewUserPage() {
     const router = useRouter();
     const [username, setUsername] = useState('');
+    const [displayName, setDisplayName] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('WRITER');
     const [error, setError] = useState('');
@@ -19,7 +20,7 @@ export default function NewUserPage() {
             const res = await fetch('/api/admin/users', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password, role }),
+                body: JSON.stringify({ username, displayName, password, role }),
             });
             if (res.ok) {
                 router.push('/admin/users');
@@ -41,8 +42,8 @@ export default function NewUserPage() {
         'mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300';
 
     return (
-        <div className="p-8">
-            <h1 className="mb-8 text-2xl font-bold text-gray-900 dark:text-white">
+        <div className="p-4 md:p-8">
+            <h1 className="mb-8 text-xl font-bold text-gray-900 dark:text-white md:text-2xl">
                 New User
             </h1>
 
@@ -66,6 +67,17 @@ export default function NewUserPage() {
                         onChange={(e) => setUsername(e.target.value)}
                         required
                         autoFocus
+                        className={inputClass}
+                    />
+                </div>
+
+                <div className="mb-5">
+                    <label className={labelClass}>Display Name</label>
+                    <input
+                        type="text"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        placeholder="Name shown on published posts"
                         className={inputClass}
                     />
                 </div>

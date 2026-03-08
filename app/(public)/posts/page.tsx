@@ -4,16 +4,28 @@ import { prisma } from '@/lib/prisma';
 import { formatDate } from '@/lib/utils';
 import { Eye, Clock } from 'lucide-react';
 import PostsFilter from './PostsFilter';
+import Pagination from './Pagination';
+import { getLocale } from '@/lib/locale.server';
+import { getT } from '@/lib/i18n';
+import { localePath } from '@/lib/locale';
+
+const PAGE_SIZE = 10;
 
 interface Props {
     searchParams: Promise<{
         sort?: string;
         category?: string;
+        tag?: string;
+        search?: string;
+        page?: string;
     }>;
 }
 
 export default async function AllPostsPage({ searchParams }: Props) {
-    const { sort = 'newest', category = '' } = await searchParams;
+    const { sort = 'newest', category = '', tag = '', search = '', page = '1' } =
+        await searchParams;
+
+    const currentPage = Math.max(1, parseInt(page) || 1);
 
     const orderBy =
         sort === 'oldest'
@@ -22,22 +34,64 @@ export default async function AllPostsPage({ searchParams }: Props) {
               ? { views: 'desc' as const }
               : { publishedAt: 'desc' as const };
 
-    const [posts, categories] = await Promise.all([
+    const userLang = await getLocale();
+    const t = getT(userLang);
+
+    const where = {
+        status: 'PUBLISHED' as const,
+        language: userLang,
+        ...(category ? { category: { slug: category } } : {}),
+        ...(tag ? { postTags: { some: { tag: { slug: tag } } } } : {}),
+        ...(search
+            ? {
+                  OR: [
+                      { title: { contains: search, mode: 'insensitive' as const } },
+                      { excerpt: { contains: search, mode: 'insensitive' as const } },
+                      {
+                          category: {
+                              name: { contains: search, mode: 'insensitive' as const },
+                          },
+                      },
+                      {
+                          postTags: {
+                              some: {
+                                  tag: {
+                                      name: {
+                                          contains: search,
+                                          mode: 'insensitive' as const,
+                                      },
+                                  },
+                              },
+                          },
+                      },
+                  ],
+              }
+            : {}),
+    };
+
+    const [total, posts, categories] = await Promise.all([
+        prisma.post.count({ where }),
         prisma.post.findMany({
-            where: {
-                status: 'PUBLISHED',
-                ...(category
-                    ? { category: { slug: category } }
-                    : {}),
-            },
+            where,
             include: {
                 category: true,
                 author: { select: { username: true } },
             },
             orderBy,
+            skip: (currentPage - 1) * PAGE_SIZE,
+            take: PAGE_SIZE,
         }),
         prisma.category.findMany({ orderBy: { name: 'asc' } }),
     ]);
+
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+
+    // Resolve active tag name for display
+    let activeTagName = '';
+    if (tag) {
+        const tagRecord = await prisma.tag.findUnique({ where: { slug: tag } });
+        activeTagName = tagRecord?.name ?? tag;
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 py-12 dark:bg-gray-900/30">
@@ -46,32 +100,42 @@ export default async function AllPostsPage({ searchParams }: Props) {
                 <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                            All Posts
+                            {t.allPostsTitle}
                         </h1>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            {posts.length}{' '}
-                            {posts.length === 1 ? 'post' : 'posts'} found
+                            {total} {t.postsFound}
                         </p>
                     </div>
 
                     <Suspense fallback={null}>
-                        <PostsFilter categories={categories} />
+                        <PostsFilter
+                            categories={categories}
+                            activeTag={activeTagName}
+                            activeSearch={search}
+                        />
                     </Suspense>
                 </div>
 
                 {/* Grid */}
                 {posts.length === 0 ? (
                     <div className="py-24 text-center text-gray-400">
-                        No posts found.
+                        {t.noPostsFound}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {posts.map((post) => (
-                            <Link
-                                key={post.id}
-                                href={`/posts/${post.slug}`}
-                            >
-                                <article className="group overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-300 hover:border-gray-300 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700">
+                    <>
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            {posts.map((post) => (
+                                <article
+                                    key={post.id}
+                                    className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-300 hover:border-gray-300 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700"
+                                >
+                                    {/* Main link covers the whole card */}
+                                    <Link
+                                        href={localePath(`/posts/${post.slug}`, userLang)}
+                                        className="absolute inset-0 z-0"
+                                        aria-label={post.title}
+                                    />
+
                                     {post.thumbnail ? (
                                         <div className="h-44 w-full overflow-hidden">
                                             <img
@@ -86,9 +150,12 @@ export default async function AllPostsPage({ searchParams }: Props) {
 
                                     <div className="p-5">
                                         {post.category && (
-                                            <span className="mb-2 inline-block rounded-full bg-blue-100 px-3 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                                            <Link
+                                                href={localePath(`/posts?category=${post.category.slug}`, userLang)}
+                                                className="relative z-10 mb-2 inline-block rounded-full bg-blue-100 px-3 py-0.5 text-xs font-semibold text-blue-700 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-900/60"
+                                            >
                                                 {post.category.name}
-                                            </span>
+                                            </Link>
                                         )}
                                         <h2 className="mb-2 line-clamp-2 font-semibold text-gray-900 transition-colors group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">
                                             {post.title}
@@ -102,9 +169,7 @@ export default async function AllPostsPage({ searchParams }: Props) {
                                             <span className="flex items-center gap-1">
                                                 <Clock className="h-3 w-3" />
                                                 {post.publishedAt
-                                                    ? formatDate(
-                                                          post.publishedAt
-                                                      )
+                                                    ? formatDate(post.publishedAt)
                                                     : '—'}
                                             </span>
                                             <span className="flex items-center gap-1">
@@ -114,9 +179,18 @@ export default async function AllPostsPage({ searchParams }: Props) {
                                         </div>
                                     </div>
                                 </article>
-                            </Link>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+
+                        {totalPages > 1 && (
+                            <Suspense fallback={null}>
+                                <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                />
+                            </Suspense>
+                        )}
+                    </>
                 )}
             </div>
         </div>

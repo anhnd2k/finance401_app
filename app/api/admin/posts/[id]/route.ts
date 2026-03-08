@@ -47,21 +47,14 @@ export async function PUT(req: NextRequest, { params }: Params) {
             excerpt,
             thumbnail,
             status,
-            categoryName,
+            language,
+            translationGroupId,
+            categoryId: rawCategoryId,
             tags,
             images,
         } = body;
 
-        let categoryId: number | null = null;
-        if (categoryName?.trim()) {
-            const catSlug = slugify(categoryName);
-            const cat = await prisma.category.upsert({
-                where: { slug: catSlug },
-                update: {},
-                create: { name: categoryName.trim(), slug: catSlug },
-            });
-            categoryId = cat.id;
-        }
+        const categoryId: number | null = rawCategoryId ?? null;
 
         const tagIds: number[] = [];
         if (Array.isArray(tags)) {
@@ -82,18 +75,36 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
         const existing = await prisma.post.findUnique({
             where: { id: postId },
-            select: { status: true, publishedAt: true },
+            select: { status: true, publishedAt: true, slug: true, translationGroupId: true },
         });
+
+        const newSlug = slug || slugify(title);
+
+        // If slug changed and post has siblings, propagate to all versions
+        if (
+            existing?.slug !== newSlug &&
+            existing?.translationGroupId
+        ) {
+            await prisma.post.updateMany({
+                where: {
+                    translationGroupId: existing.translationGroupId,
+                    id: { not: postId },
+                },
+                data: { slug: newSlug },
+            });
+        }
 
         const post = await prisma.post.update({
             where: { id: postId },
             data: {
                 title,
-                slug: slug || slugify(title),
+                slug: newSlug,
                 content,
                 excerpt: excerpt || null,
                 thumbnail: thumbnail || null,
                 status: status || 'DRAFT',
+                language: language || 'vi',
+                ...(translationGroupId != null ? { translationGroupId } : {}),
                 categoryId,
                 publishedAt:
                     status === 'PUBLISHED'
@@ -110,7 +121,18 @@ export async function PUT(req: NextRequest, { params }: Params) {
             },
         });
         return NextResponse.json(post);
-    } catch (err) {
+    } catch (err: unknown) {
+        if (
+            typeof err === 'object' &&
+            err !== null &&
+            'code' in err &&
+            (err as { code: string }).code === 'P2002'
+        ) {
+            return NextResponse.json(
+                { error: 'A post with this slug already exists for this language.' },
+                { status: 409 }
+            );
+        }
         console.error(err);
         return NextResponse.json(
             { error: 'Failed to update post' },

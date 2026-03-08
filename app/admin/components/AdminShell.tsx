@@ -7,6 +7,7 @@ import {
     LayoutDashboard,
     FileText,
     Users,
+    Tag,
     LogOut,
     ExternalLink,
     Menu,
@@ -16,6 +17,7 @@ import {
 const navItems = [
     { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { label: 'Posts', href: '/admin/posts', icon: FileText },
+    { label: 'Categories', href: '/admin/categories', icon: Tag },
     { label: 'Users', href: '/admin/users', icon: Users },
 ];
 
@@ -82,7 +84,10 @@ export default function AdminShell({ username, role, children }: Props) {
 
             {/* Footer */}
             <div className="border-t border-gray-200 p-4 dark:border-gray-800">
-                <div className="mb-3 flex items-center gap-2">
+                <Link
+                    href="/admin/profile"
+                    className="mb-3 flex items-center gap-2 rounded-lg px-2 py-1.5 transition hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
                         {username[0]?.toUpperCase()}
                     </div>
@@ -94,7 +99,7 @@ export default function AdminShell({ username, role, children }: Props) {
                             {role.toLowerCase()}
                         </p>
                     </div>
-                </div>
+                </Link>
                 <button
                     onClick={handleLogout}
                     className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"

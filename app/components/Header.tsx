@@ -4,6 +4,9 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Menu, X, Sun, Moon, Search } from 'lucide-react';
+import LanguageSwitcher from './LanguageSwitcher';
+import { type Locale } from '@/lib/locale';
+import { getT } from '@/lib/i18n';
 
 interface SearchResult {
     id: number;
@@ -12,11 +15,6 @@ interface SearchResult {
     thumbnail: string | null;
     category: { name: string } | null;
 }
-
-const navLinks = [
-    { name: 'All Posts', href: '/posts' },
-    { name: 'About', href: '/about' },
-];
 
 export default function Header() {
     const router = useRouter();
@@ -29,6 +27,8 @@ export default function Header() {
     const [results, setResults] = useState<SearchResult[]>([]);
     const [searching, setSearching] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
+
+    const locale: Locale = pathname.startsWith('/en') ? 'en' : 'vi';
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Sync React state with the class already set by the inline script
@@ -105,13 +105,20 @@ export default function Header() {
         setIsMenuOpen(false);
     }
 
+    const t = getT(locale);
+    const localePrefix = locale === 'en' ? '/en' : '';
+    const navLinks = [
+        { name: t.allPosts, href: localePrefix + '/posts' },
+        { name: t.about, href: localePrefix + '/about' },
+    ];
+
     return (
         <header className="sticky top-0 z-50 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
             <div className="container mx-auto px-4 py-4">
                 <div className="flex items-center justify-between">
                     {/* Logo */}
                     <Link
-                        href="/"
+                        href={localePrefix + '/'}
                         className="text-2xl font-bold tracking-tight"
                     >
                         FINANCE401
@@ -123,7 +130,7 @@ export default function Header() {
                             const active = pathname === link.href || pathname.startsWith(link.href + '/');
                             return (
                                 <Link
-                                    key={link.name}
+                                    key={link.href}
                                     href={link.href}
                                     className={`font-medium transition-colors ${active ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}
                                 >
@@ -135,6 +142,8 @@ export default function Header() {
 
                     {/* Icon buttons */}
                     <div className="flex items-center space-x-2">
+                        <LanguageSwitcher pathname={pathname} />
+
                         <button
                             onClick={openSearch}
                             className="rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -180,7 +189,7 @@ export default function Header() {
                                 <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
                                 <input
                                     type="text"
-                                    placeholder="Search posts by title or tag…"
+                                    placeholder={t.searchPlaceholder}
                                     value={searchQuery}
                                     onChange={(e) =>
                                         setSearchQuery(e.target.value)
@@ -203,12 +212,12 @@ export default function Header() {
                             <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-800 dark:bg-gray-900">
                                 {searching && (
                                     <div className="px-4 py-3 text-sm text-gray-400">
-                                        Searching…
+                                        {t.searching}
                                     </div>
                                 )}
                                 {!searching && results.length === 0 && searchQuery.length >= 2 && (
                                     <div className="px-4 py-3 text-sm text-gray-400">
-                                        No results found.
+                                        {t.noResults}
                                     </div>
                                 )}
                                 {results.map((post) => (

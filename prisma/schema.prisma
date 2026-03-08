@@ -17,12 +17,13 @@ enum PostStatus {
 }
 
 model User {
-  id        Int        @id @default(autoincrement())
-  username  String     @unique
-  password  String
-  role      Role       @default(WRITER)
-  createdAt DateTime   @default(now())
-  posts     Post[]
+  id          Int        @id @default(autoincrement())
+  username    String     @unique
+  displayName String?
+  password    String
+  role        Role       @default(WRITER)
+  createdAt   DateTime   @default(now())
+  posts       Post[]
 }
 
 model Category {
@@ -42,11 +43,13 @@ model Tag {
 model Post {
   id          Int        @id @default(autoincrement())
   title       String
-  slug        String     @unique
+  slug        String
   content     String
   excerpt     String?
   thumbnail   String?
-  status      PostStatus @default(DRAFT)
+  language           String     @default("vi")
+  translationGroupId Int?
+  status             PostStatus @default(DRAFT)
   views       Int        @default(0)
   categoryId  Int?
   authorId    Int?
@@ -57,6 +60,8 @@ model Post {
   author      User?      @relation(fields: [authorId], references: [id])
   images      PostImage[]
   postTags    PostTag[]
+
+  @@unique([slug, language])
 }
 
 model PostImage {

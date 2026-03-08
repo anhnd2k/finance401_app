@@ -1,8 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
-import { formatDate } from '@/lib/utils';
-import { PlusCircle, Eye, Pencil } from 'lucide-react';
-import DeletePostButton from './DeletePostButton';
+import { PlusCircle } from 'lucide-react';
+import PostsTableClient, { type PostGroup } from './PostsTableClient';
 
 export default async function AdminPostsPage() {
     const posts = await prisma.post.findMany({
@@ -12,6 +11,37 @@ export default async function AdminPostsPage() {
         },
         orderBy: { createdAt: 'desc' },
     });
+
+    // Group posts by translationGroupId (one row per "topic")
+    const groupMap = new Map<number, PostGroup['versions']>();
+    for (const post of posts) {
+        const gid = post.translationGroupId ?? post.id;
+        if (!groupMap.has(gid)) groupMap.set(gid, []);
+        groupMap.get(gid)!.push({
+            id: post.id,
+            title: post.title,
+            slug: post.slug,
+            language: post.language,
+            status: post.status,
+            views: post.views,
+            createdAt: post.createdAt.toISOString(),
+            category: post.category,
+            author: post.author,
+        });
+    }
+
+    // Sort groups by most recently created version
+    const groups: PostGroup[] = Array.from(groupMap.entries())
+        .map(([gid, versions]) => ({ gid, versions }))
+        .sort((a, b) => {
+            const aMax = Math.max(
+                ...a.versions.map((v) => new Date(v.createdAt).getTime())
+            );
+            const bMax = Math.max(
+                ...b.versions.map((v) => new Date(v.createdAt).getTime())
+            );
+            return bMax - aMax;
+        });
 
     return (
         <div className="p-4 md:p-8">
@@ -38,91 +68,14 @@ export default async function AdminPostsPage() {
                                 <th className="px-4 py-3 md:px-6">Category</th>
                                 <th className="hidden px-4 py-3 md:table-cell md:px-6">Author</th>
                                 <th className="px-4 py-3 md:px-6">Status</th>
+                                <th className="px-4 py-3 md:px-6">Languages</th>
                                 <th className="hidden px-4 py-3 md:table-cell md:px-6">Views</th>
                                 <th className="hidden px-4 py-3 md:table-cell md:px-6">Date</th>
                                 <th className="px-4 py-3 md:px-6">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                            {posts.map((post) => (
-                                <tr
-                                    key={post.id}
-                                    className="hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                                >
-                                    <td className="max-w-[180px] px-4 py-3 md:max-w-xs md:px-6 md:py-4">
-                                        <p className="truncate font-medium text-gray-900 dark:text-white">
-                                            {post.title}
-                                        </p>
-                                        <p className="truncate text-xs text-gray-400">
-                                            /{post.slug}
-                                        </p>
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-500 dark:text-gray-400 md:px-6 md:py-4">
-                                        {post.category?.name ?? '—'}
-                                    </td>
-                                    <td className="hidden px-4 py-3 text-gray-500 dark:text-gray-400 md:table-cell md:px-6 md:py-4">
-                                        {post.author?.username ?? '—'}
-                                    </td>
-                                    <td className="px-4 py-3 md:px-6 md:py-4">
-                                        <span
-                                            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                                                post.status === 'PUBLISHED'
-                                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                    : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                                            }`}
-                                        >
-                                            {post.status.toLowerCase()}
-                                        </span>
-                                    </td>
-                                    <td className="hidden px-4 py-3 md:table-cell md:px-6 md:py-4">
-                                        <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-                                            <Eye className="h-3 w-3" />
-                                            {post.views}
-                                        </span>
-                                    </td>
-                                    <td className="hidden px-4 py-3 text-gray-500 dark:text-gray-400 md:table-cell md:px-6 md:py-4">
-                                        {formatDate(post.createdAt)}
-                                    </td>
-                                    <td className="px-4 py-3 md:px-6 md:py-4">
-                                        <div className="flex items-center gap-1">
-                                            {post.status === 'PUBLISHED' && (
-                                                <Link
-                                                    href={`/posts/${post.slug}`}
-                                                    target="_blank"
-                                                    className="rounded p-1 text-gray-400 hover:text-blue-600"
-                                                    title="View"
-                                                >
-                                                    <Eye className="h-4 w-4" />
-                                                </Link>
-                                            )}
-                                            <Link
-                                                href={`/admin/posts/${post.id}/edit`}
-                                                className="rounded p-1 text-gray-400 hover:text-blue-600"
-                                                title="Edit"
-                                            >
-                                                <Pencil className="h-4 w-4" />
-                                            </Link>
-                                            <DeletePostButton id={post.id} />
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            {posts.length === 0 && (
-                                <tr>
-                                    <td
-                                        colSpan={7}
-                                        className="px-6 py-8 text-center text-gray-400"
-                                    >
-                                        No posts yet.{' '}
-                                        <Link
-                                            href="/admin/posts/new"
-                                            className="text-blue-600 hover:underline"
-                                        >
-                                            Create your first post
-                                        </Link>
-                                    </td>
-                                </tr>
-                            )}
+                            <PostsTableClient groups={groups} />
                         </tbody>
                     </table>
                 </div>

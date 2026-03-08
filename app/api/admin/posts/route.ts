@@ -37,21 +37,12 @@ export async function POST(req: NextRequest) {
             excerpt,
             thumbnail,
             status,
-            categoryName,
+            language,
+            translationGroupId,
+            categoryId,
             tags,
             images,
         } = body;
-
-        let categoryId: number | null = null;
-        if (categoryName?.trim()) {
-            const catSlug = slugify(categoryName);
-            const cat = await prisma.category.upsert({
-                where: { slug: catSlug },
-                update: {},
-                create: { name: categoryName.trim(), slug: catSlug },
-            });
-            categoryId = cat.id;
-        }
 
         const tagIds: number[] = [];
         if (Array.isArray(tags)) {
@@ -67,6 +58,7 @@ export async function POST(req: NextRequest) {
             }
         }
 
+        // Create the post first
         const post = await prisma.post.create({
             data: {
                 title,
@@ -75,7 +67,10 @@ export async function POST(req: NextRequest) {
                 excerpt: excerpt || null,
                 thumbnail: thumbnail || null,
                 status: status || 'DRAFT',
-                categoryId,
+                language: language || 'vi',
+                // Use provided translationGroupId or will self-assign below
+                translationGroupId: translationGroupId ?? null,
+                categoryId: categoryId ?? null,
                 authorId: session.userId,
                 publishedAt:
                     status === 'PUBLISHED' ? new Date() : null,
@@ -89,8 +84,28 @@ export async function POST(req: NextRequest) {
                 },
             },
         });
+
+        // Self-assign translationGroupId if not provided (standalone post)
+        if (!translationGroupId) {
+            await prisma.post.update({
+                where: { id: post.id },
+                data: { translationGroupId: post.id },
+            });
+        }
+
         return NextResponse.json(post, { status: 201 });
-    } catch (err) {
+    } catch (err: unknown) {
+        if (
+            typeof err === 'object' &&
+            err !== null &&
+            'code' in err &&
+            (err as { code: string }).code === 'P2002'
+        ) {
+            return NextResponse.json(
+                { error: 'A post with this slug already exists for this language.' },
+                { status: 409 }
+            );
+        }
         console.error(err);
         return NextResponse.json(
             { error: 'Failed to create post' },
