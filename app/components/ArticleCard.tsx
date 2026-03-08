@@ -11,7 +11,6 @@ interface ArticleCardProps {
 export default function ArticleCard({
     title,
     author,
-    type = 'article',
     sponsored = false,
     excerpt,
     readTime,

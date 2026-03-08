@@ -15,67 +15,26 @@ import {
     ExternalLink,
     Menu,
     X,
-    Banana,
+    Info,
 } from 'lucide-react';
 
 const navItems = [
-    {
-        label: 'Dashboard',
-        href: '/admin',
-        icon: LayoutDashboard,
-    },
-    {
-        label: 'Posts',
-        href: '/admin/posts',
-        icon: FileText,
-    },
-    {
-        label: 'Categories',
-        href: '/admin/categories',
-        icon: Tag,
-    },
-    {
-        label: 'Users',
-        href: '/admin/users',
-        icon: Users,
-    },
-    {
-        label: 'About',
-        href: '/admin/about',
-        icon: Banana,
-    },
+    { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { label: 'Posts', href: '/admin/posts', icon: FileText },
+    { label: 'Categories', href: '/admin/categories', icon: Tag },
+    { label: 'About', href: '/admin/about', icon: Info },
+    { label: 'Users', href: '/admin/users', icon: Users },
 ];
 
-interface Props {
+interface SidebarProps {
     username: string;
     role: string;
-    children: React.ReactNode;
+    pathname: string;
+    onLogout: () => void;
 }
 
-export default function AdminShell({
-    username,
-    role,
-    children,
-}: Props) {
-    const pathname = usePathname();
-    const router = useRouter();
-    const [sidebarOpen, setSidebarOpen] =
-        useState(false);
-
-    // Close sidebar on route change
-    useEffect(() => {
-        setSidebarOpen(false);
-    }, [pathname]);
-
-    async function handleLogout() {
-        await fetch('/api/auth/logout', {
-            method: 'POST',
-        });
-        router.push('/admin/login');
-        router.refresh();
-    }
-
-    const SidebarContent = () => (
+function SidebarContent({ username, role, pathname, onLogout }: SidebarProps) {
+    return (
         <>
             {/* Brand */}
             <div className="border-b border-gray-200 px-6 py-5 dark:border-gray-800">
@@ -83,14 +42,10 @@ export default function AdminShell({
                     href="/"
                     className="flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white"
                 >
-                    <span className="text-lg">
-                        Finance401
-                    </span>
+                    <span className="text-lg">Finance401</span>
                     <ExternalLink className="h-3 w-3 text-gray-400" />
                 </Link>
-                <p className="mt-0.5 text-xs text-gray-400">
-                    Admin Panel
-                </p>
+                <p className="mt-0.5 text-xs text-gray-400">Admin Panel</p>
             </div>
 
             {/* Nav */}
@@ -98,11 +53,8 @@ export default function AdminShell({
                 {navItems.map((item) => {
                     const active =
                         item.href === '/admin'
-                            ? pathname ===
-                              '/admin'
-                            : pathname.startsWith(
-                                  item.href
-                              );
+                            ? pathname === '/admin'
+                            : pathname.startsWith(item.href);
                     const Icon = item.icon;
                     return (
                         <Link
@@ -134,13 +86,11 @@ export default function AdminShell({
                         <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
                             {username}
                         </p>
-                        <p className="text-xs capitalize text-gray-400">
-                            {role.toLowerCase()}
-                        </p>
+                        <p className="text-xs capitalize text-gray-400">{role.toLowerCase()}</p>
                     </div>
                 </Link>
                 <button
-                    onClick={handleLogout}
+                    onClick={onLogout}
                     className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
                 >
                     <LogOut className="h-4 w-4" />
@@ -149,12 +99,36 @@ export default function AdminShell({
             </div>
         </>
     );
+}
+
+interface Props {
+    username: string;
+    role: string;
+    children: React.ReactNode;
+}
+
+export default function AdminShell({ username, role, children }: Props) {
+    const pathname = usePathname();
+    const router = useRouter();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    // Close sidebar on route change
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSidebarOpen(false);
+    }, [pathname]);
+
+    async function handleLogout() {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        router.push('/admin/login');
+        router.refresh();
+    }
 
     return (
         <div className="flex min-h-screen">
             {/* Desktop sidebar */}
             <aside className="hidden w-60 shrink-0 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 md:flex">
-                <SidebarContent />
+                <SidebarContent username={username} role={role} pathname={pathname} onLogout={handleLogout} />
             </aside>
 
             {/* Mobile overlay backdrop */}
@@ -184,7 +158,7 @@ export default function AdminShell({
                 >
                     <X className="h-5 w-5" />
                 </button>
-                <SidebarContent />
+                <SidebarContent username={username} role={role} pathname={pathname} onLogout={handleLogout} />
             </aside>
 
             {/* Main area */}

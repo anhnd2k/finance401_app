@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LOCALE_COOKIE, LOCALE_LABELS, type Locale } from '@/lib/locale';
+import { LOCALE_LABELS, type Locale } from '@/lib/locale';
 import { Globe, Home } from 'lucide-react';
 
 interface Props {

@@ -27,6 +27,12 @@ const eslintConfig = defineConfig([
     //     },
     // },
 
+    {
+        rules: {
+            '@next/next/no-img-element': 'off',
+        },
+    },
+
     globalIgnores([
         // Default ignores of eslint-config-next:
         '.next/**',
