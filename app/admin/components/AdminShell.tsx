@@ -15,15 +15,35 @@ import {
     ExternalLink,
     Menu,
     X,
-    Info,
+    Banana,
 } from 'lucide-react';
 
 const navItems = [
-    { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-    { label: 'Posts', href: '/admin/posts', icon: FileText },
-    { label: 'Categories', href: '/admin/categories', icon: Tag },
-    { label: 'About', href: '/admin/about', icon: Info },
-    { label: 'Users', href: '/admin/users', icon: Users },
+    {
+        label: 'Dashboard',
+        href: '/admin',
+        icon: LayoutDashboard,
+    },
+    {
+        label: 'Posts',
+        href: '/admin/posts',
+        icon: FileText,
+    },
+    {
+        label: 'Categories',
+        href: '/admin/categories',
+        icon: Tag,
+    },
+    {
+        label: 'About',
+        href: '/admin/about',
+        icon: Banana,
+    },
+    {
+        label: 'Users',
+        href: '/admin/users',
+        icon: Users,
+    },
 ];
 
 interface SidebarProps {
@@ -33,7 +53,12 @@ interface SidebarProps {
     onLogout: () => void;
 }
 
-function SidebarContent({ username, role, pathname, onLogout }: SidebarProps) {
+function SidebarContent({
+    username,
+    role,
+    pathname,
+    onLogout,
+}: SidebarProps) {
     return (
         <>
             {/* Brand */}
@@ -42,10 +67,14 @@ function SidebarContent({ username, role, pathname, onLogout }: SidebarProps) {
                     href="/"
                     className="flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white"
                 >
-                    <span className="text-lg">Finance401</span>
+                    <span className="text-lg">
+                        Finance401
+                    </span>
                     <ExternalLink className="h-3 w-3 text-gray-400" />
                 </Link>
-                <p className="mt-0.5 text-xs text-gray-400">Admin Panel</p>
+                <p className="mt-0.5 text-xs text-gray-400">
+                    Admin Panel
+                </p>
             </div>
 
             {/* Nav */}
@@ -53,8 +82,11 @@ function SidebarContent({ username, role, pathname, onLogout }: SidebarProps) {
                 {navItems.map((item) => {
                     const active =
                         item.href === '/admin'
-                            ? pathname === '/admin'
-                            : pathname.startsWith(item.href);
+                            ? pathname ===
+                              '/admin'
+                            : pathname.startsWith(
+                                  item.href
+                              );
                     const Icon = item.icon;
                     return (
                         <Link
@@ -86,7 +118,9 @@ function SidebarContent({ username, role, pathname, onLogout }: SidebarProps) {
                         <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
                             {username}
                         </p>
-                        <p className="text-xs capitalize text-gray-400">{role.toLowerCase()}</p>
+                        <p className="text-xs capitalize text-gray-400">
+                            {role.toLowerCase()}
+                        </p>
                     </div>
                 </Link>
                 <button
@@ -107,10 +141,15 @@ interface Props {
     children: React.ReactNode;
 }
 
-export default function AdminShell({ username, role, children }: Props) {
+export default function AdminShell({
+    username,
+    role,
+    children,
+}: Props) {
     const pathname = usePathname();
     const router = useRouter();
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] =
+        useState(false);
 
     // Close sidebar on route change
     useEffect(() => {
@@ -119,7 +158,9 @@ export default function AdminShell({ username, role, children }: Props) {
     }, [pathname]);
 
     async function handleLogout() {
-        await fetch('/api/auth/logout', { method: 'POST' });
+        await fetch('/api/auth/logout', {
+            method: 'POST',
+        });
         router.push('/admin/login');
         router.refresh();
     }
@@ -128,7 +169,12 @@ export default function AdminShell({ username, role, children }: Props) {
         <div className="flex min-h-screen">
             {/* Desktop sidebar */}
             <aside className="hidden w-60 shrink-0 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 md:flex">
-                <SidebarContent username={username} role={role} pathname={pathname} onLogout={handleLogout} />
+                <SidebarContent
+                    username={username}
+                    role={role}
+                    pathname={pathname}
+                    onLogout={handleLogout}
+                />
             </aside>
 
             {/* Mobile overlay backdrop */}
@@ -158,7 +204,12 @@ export default function AdminShell({ username, role, children }: Props) {
                 >
                     <X className="h-5 w-5" />
                 </button>
-                <SidebarContent username={username} role={role} pathname={pathname} onLogout={handleLogout} />
+                <SidebarContent
+                    username={username}
+                    role={role}
+                    pathname={pathname}
+                    onLogout={handleLogout}
+                />
             </aside>
 
             {/* Main area */}
