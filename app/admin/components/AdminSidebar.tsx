@@ -8,11 +8,13 @@ import {
     Users,
     LogOut,
     ExternalLink,
+    Info,
 } from 'lucide-react';
 
 const navItems = [
     { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { label: 'Posts', href: '/admin/posts', icon: FileText },
+    { label: 'About', href: '/admin/about', icon: Info },
     { label: 'Users', href: '/admin/users', icon: Users },
 ];
 

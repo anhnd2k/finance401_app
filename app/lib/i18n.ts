@@ -61,6 +61,6 @@ const translations = {
 
 export type Translations = typeof translations.en;
 
-export function getT(locale: Locale): Translations {
+export function getT(locale: Locale): typeof translations[Locale] {
     return translations[locale];
 }

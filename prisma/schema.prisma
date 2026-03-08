@@ -72,6 +72,16 @@ model PostImage {
   post   Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
+model SitePage {
+  id        Int      @id @default(autoincrement())
+  key       String
+  language  String
+  content   String
+  updatedAt DateTime @updatedAt
+
+  @@unique([key, language])
+}
+
 model PostTag {
   postId Int
   tagId  Int
