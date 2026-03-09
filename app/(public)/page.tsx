@@ -3,7 +3,10 @@ import { prisma } from '@/lib/prisma';
 import { formatDate } from '@/lib/utils';
 import { getLocale } from '@/lib/locale.server';
 import { getT } from '@/lib/i18n';
-import { localePath, type Locale } from '@/lib/locale';
+import {
+    localePath,
+    type Locale,
+} from '@/lib/locale';
 import {
     Eye,
     Clock,
@@ -17,7 +20,10 @@ export default async function HomePage() {
     const [latestPosts, topPosts] =
         await Promise.all([
             prisma.post.findMany({
-                where: { status: 'PUBLISHED', language: userLang },
+                where: {
+                    status: 'PUBLISHED',
+                    language: userLang,
+                },
                 include: {
                     category: true,
                     author: {
@@ -30,7 +36,10 @@ export default async function HomePage() {
                 take: 6,
             }),
             prisma.post.findMany({
-                where: { status: 'PUBLISHED', language: userLang },
+                where: {
+                    status: 'PUBLISHED',
+                    language: userLang,
+                },
                 include: { category: true },
                 orderBy: { views: 'desc' },
                 take: 5,
@@ -46,9 +55,6 @@ export default async function HomePage() {
                         <h2 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
                             {t.latestPosts}
                         </h2>
-                        <p className="text-gray-500 dark:text-gray-400">
-                            {t.latestPostsDesc}
-                        </p>
                     </div>
 
                     {latestPosts.length === 0 ? (
@@ -60,9 +66,15 @@ export default async function HomePage() {
                             {latestPosts.map(
                                 (post) => (
                                     <PostCard
-                                        key={post.id}
-                                        post={post}
-                                        locale={userLang}
+                                        key={
+                                            post.id
+                                        }
+                                        post={
+                                            post
+                                        }
+                                        locale={
+                                            userLang
+                                        }
                                     />
                                 )
                             )}
@@ -82,7 +94,9 @@ export default async function HomePage() {
                                     {t.mostViewed}
                                 </h2>
                                 <p className="text-gray-500 dark:text-gray-400">
-                                    {t.mostViewedDesc}
+                                    {
+                                        t.mostViewedDesc
+                                    }
                                 </p>
                             </div>
                         </div>
@@ -91,10 +105,18 @@ export default async function HomePage() {
                             {topPosts.map(
                                 (post, i) => (
                                     <TopPostItem
-                                        key={post.id}
-                                        post={post}
-                                        rank={i + 1}
-                                        locale={userLang}
+                                        key={
+                                            post.id
+                                        }
+                                        post={
+                                            post
+                                        }
+                                        rank={
+                                            i + 1
+                                        }
+                                        locale={
+                                            userLang
+                                        }
                                     />
                                 )
                             )}
@@ -131,7 +153,10 @@ function PostCard({
     return (
         <article className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-300 hover:border-gray-300 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700">
             <Link
-                href={localePath(`/posts/${post.slug}`, locale)}
+                href={localePath(
+                    `/posts/${post.slug}`,
+                    locale
+                )}
                 className="absolute inset-0 z-0"
                 aria-label={post.title}
             />
@@ -151,7 +176,10 @@ function PostCard({
             <div className="p-6">
                 {post.category && (
                     <Link
-                        href={localePath(`/posts?category=${post.category.slug}`, locale)}
+                        href={localePath(
+                            `/posts?category=${post.category.slug}`,
+                            locale
+                        )}
                         className="relative z-10 mb-3 inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-900/60"
                     >
                         {post.category.name}
@@ -172,7 +200,9 @@ function PostCard({
                     <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {post.publishedAt
-                            ? formatDate(post.publishedAt)
+                            ? formatDate(
+                                  post.publishedAt
+                              )
                             : '—'}
                     </span>
                     <span className="flex items-center gap-1">
@@ -197,7 +227,10 @@ function TopPostItem({
     return (
         <article className="group relative flex items-center gap-6 rounded-xl border border-gray-200 bg-white p-4 transition-all hover:border-gray-300 hover:shadow-md dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700">
             <Link
-                href={localePath(`/posts/${post.slug}`, locale)}
+                href={localePath(
+                    `/posts/${post.slug}`,
+                    locale
+                )}
                 className="absolute inset-0 z-0"
                 aria-label={post.title}
             />
@@ -219,7 +252,10 @@ function TopPostItem({
             <div className="min-w-0 flex-1">
                 {post.category && (
                     <Link
-                        href={localePath(`/posts?category=${post.category.slug}`, locale)}
+                        href={localePath(
+                            `/posts?category=${post.category.slug}`,
+                            locale
+                        )}
                         className="relative z-10 mb-1 inline-block text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
                     >
                         {post.category.name}
@@ -232,7 +268,9 @@ function TopPostItem({
 
             <div className="flex shrink-0 items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
                 <Eye className="h-4 w-4" />
-                <span>{post.views.toLocaleString()}</span>
+                <span>
+                    {post.views.toLocaleString()}
+                </span>
             </div>
         </article>
     );
