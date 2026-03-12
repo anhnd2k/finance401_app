@@ -3,7 +3,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy package files và prisma schema
-COPY package.json yarn.lock ./
+COPY package.json package-lock.json* ./
 COPY prisma ./prisma/
 
 RUN npm ci
