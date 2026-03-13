@@ -21,18 +21,25 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
-# Required for Next.js standalone to bind on all interfaces inside Docker
 ENV HOSTNAME=0.0.0.0
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
 
-# Standalone bundle includes a minimal node_modules — no need to copy full deps
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
+# Copy prisma schema + migrations để chạy migrate deploy lúc runtime
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+
+# Cần prisma CLI để chạy migrate deploy
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+
 USER nextjs
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+# Chạy migrate trước, sau đó mới start app
+CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
