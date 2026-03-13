@@ -2,34 +2,37 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files và prisma schema
-COPY package.json package-lock.json* ./
+# Copy package files and prisma schema
+COPY package.json yarn.lock ./
 COPY prisma ./prisma/
+COPY prisma.config.ts ./
 
-RUN npm ci
+RUN yarn install --frozen-lockfile
 
-# Generate Prisma client
+# Explicitly generate Prisma client (also runs via postinstall, but kept for clarity)
 RUN npx prisma generate
 
 COPY . .
-RUN npm run build
+RUN yarn build
 
+# ── Runner ──────────────────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
+# Required for Next.js standalone to bind on all interfaces inside Docker
+ENV HOSTNAME=0.0.0.0
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
 
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/prisma ./prisma
+# Standalone bundle includes a minimal node_modules — no need to copy full deps
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 USER nextjs
 EXPOSE 3000
 
-CMD sh -c "npx prisma migrate deploy && npm start"
+CMD ["node", "server.js"]
