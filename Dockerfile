@@ -28,6 +28,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
+COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./
+
 # Copy toàn bộ node_modules thay vì copy lẻ từng package
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
