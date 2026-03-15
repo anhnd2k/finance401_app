@@ -12,7 +12,6 @@ RUN npx prisma generate
 COPY . .
 RUN yarn build
 
-# ── Runner ──────────────────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
 WORKDIR /app
 
@@ -30,7 +29,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./
 
-# Copy toàn bộ node_modules thay vì copy lẻ từng package
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
 USER nextjs
