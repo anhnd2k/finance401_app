@@ -1,5 +1,4 @@
 export default function Footer() {
-
     return (
         <footer className="mt-auto border-t">
             <div className="container mx-auto px-4 py-12">
@@ -37,7 +36,7 @@ export default function Footer() {
                 {/* Copyright */}
                 <div className="mt-5 text-center">
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                        © Finance401 2026
+                        © runtocoast 2026
                     </p>
                 </div>
             </div>

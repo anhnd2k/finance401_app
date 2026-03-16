@@ -2,9 +2,9 @@ import './globals.css';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Finance 401 — Notes on everything Finance',
+    title: 'runtocoast — personal blog',
     description:
-        'A personal blog documenting my journey and insights in the world of Finance.',
+        'Learning by sharing. A personal blog about programming, technology, and life.',
 };
 
 export default function RootLayout({
