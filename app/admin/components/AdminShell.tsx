@@ -68,7 +68,7 @@ function SidebarContent({
                     className="flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white"
                 >
                     <span className="text-lg">
-                        Finance401
+                        runtocoast
                     </span>
                     <ExternalLink className="h-3 w-3 text-gray-400" />
                 </Link>
@@ -226,7 +226,7 @@ export default function AdminShell({
                         <Menu className="h-5 w-5" />
                     </button>
                     <span className="font-semibold text-gray-900 dark:text-white">
-                        Finance401 Admin
+                        runtocoast Admin
                     </span>
                 </header>
 

@@ -10,25 +10,40 @@ export default function AdminLoginPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    async function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(
+        e: React.FormEvent
+    ) {
         e.preventDefault();
         setError('');
         setLoading(true);
         try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
-            });
+            const res = await fetch(
+                '/api/auth/login',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type':
+                            'application/json',
+                    },
+                    body: JSON.stringify({
+                        username,
+                        password,
+                    }),
+                }
+            );
             if (res.ok) {
                 router.push('/admin');
                 router.refresh();
             } else {
                 const data = await res.json();
-                setError(data.error || 'Login failed');
+                setError(
+                    data.error || 'Login failed'
+                );
             }
         } catch {
-            setError('Network error, please try again');
+            setError(
+                'Network error, please try again'
+            );
         } finally {
             setLoading(false);
         }
@@ -39,7 +54,7 @@ export default function AdminLoginPage() {
             <div className="w-full max-w-sm">
                 <div className="mb-8 text-center">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        Finance401
+                        runtocoast
                     </h1>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         Admin Panel
@@ -67,7 +82,11 @@ export default function AdminLoginPage() {
                         <input
                             type="text"
                             value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            onChange={(e) =>
+                                setUsername(
+                                    e.target.value
+                                )
+                            }
                             required
                             autoFocus
                             className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
@@ -81,7 +100,11 @@ export default function AdminLoginPage() {
                         <input
                             type="password"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) =>
+                                setPassword(
+                                    e.target.value
+                                )
+                            }
                             required
                             className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                         />
@@ -92,7 +115,9 @@ export default function AdminLoginPage() {
                         disabled={loading}
                         className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
                     >
-                        {loading ? 'Signing in…' : 'Sign In'}
+                        {loading
+                            ? 'Signing in…'
+                            : 'Sign In'}
                     </button>
                 </form>
             </div>
