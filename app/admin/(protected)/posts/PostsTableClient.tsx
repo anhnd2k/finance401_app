@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Eye, Pencil } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { LOCALE_SHORT } from '@/lib/locale';
 
@@ -29,20 +29,32 @@ function PostGroupRow({ group }: { group: PostGroup }) {
         group.versions.find((v) => v.language === 'vi')?.language ??
         group.versions[0].language;
     const [selectedLang, setSelectedLang] = useState(defaultLang);
+    const [statuses, setStatuses] = useState<Record<number, string>>(
+        Object.fromEntries(group.versions.map((v) => [v.id, v.status]))
+    );
+    const [toggling, setToggling] = useState(false);
     const router = useRouter();
 
     const current =
         group.versions.find((v) => v.language === selectedLang) ??
         group.versions[0];
 
-    async function handleDelete() {
-        if (!confirm('Delete this language version? This cannot be undone.'))
-            return;
+    const currentStatus = statuses[current.id] ?? current.status;
+
+    async function toggleStatus() {
+        if (toggling) return;
+        const next = currentStatus === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED';
+        setToggling(true);
         const res = await fetch(`/api/admin/posts/${current.id}`, {
-            method: 'DELETE',
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: next }),
         });
-        if (res.ok) router.refresh();
-        else alert('Failed to delete post');
+        if (res.ok) {
+            setStatuses((prev) => ({ ...prev, [current.id]: next }));
+            router.refresh();
+        }
+        setToggling(false);
     }
 
     return (
@@ -63,18 +75,21 @@ function PostGroupRow({ group }: { group: PostGroup }) {
             </td>
 
             <td className="px-4 py-3 md:px-6 md:py-4">
-                <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        current.status === 'PUBLISHED'
-                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                            : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                <button
+                    onClick={toggleStatus}
+                    disabled={toggling}
+                    title={`Click to ${currentStatus === 'PUBLISHED' ? 'unpublish' : 'publish'}`}
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium transition-opacity disabled:opacity-50 ${
+                        currentStatus === 'PUBLISHED'
+                            ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50'
+                            : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:hover:bg-yellow-900/50'
                     }`}
                 >
-                    {current.status.toLowerCase()}
-                </span>
+                    {toggling ? '…' : currentStatus.toLowerCase()}
+                </button>
             </td>
 
-            {/* Language selector — clicking a badge switches the active row data */}
+            {/* Language selector */}
             <td className="px-4 py-3 md:px-6 md:py-4">
                 <div className="flex flex-wrap gap-1">
                     {group.versions.map((v) => (
@@ -108,7 +123,7 @@ function PostGroupRow({ group }: { group: PostGroup }) {
 
             <td className="px-4 py-3 md:px-6 md:py-4">
                 <div className="flex items-center gap-1">
-                    {current.status === 'PUBLISHED' && (
+                    {currentStatus === 'PUBLISHED' && (
                         <Link
                             href={`/posts/${current.slug}`}
                             target="_blank"
@@ -125,13 +140,6 @@ function PostGroupRow({ group }: { group: PostGroup }) {
                     >
                         <Pencil className="h-4 w-4" />
                     </Link>
-                    <button
-                        onClick={handleDelete}
-                        className="rounded p-1 text-gray-400 hover:text-red-600"
-                        title="Delete this version"
-                    >
-                        <Trash2 className="h-4 w-4" />
-                    </button>
                 </div>
             </td>
         </tr>

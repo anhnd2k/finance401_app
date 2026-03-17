@@ -141,6 +141,24 @@ export async function PUT(req: NextRequest, { params }: Params) {
     }
 }
 
+export async function PATCH(req: NextRequest, { params }: Params) {
+    const session = await getSession();
+    if (!session)
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { id } = await params;
+    const { status } = await req.json();
+    if (status !== 'DRAFT' && status !== 'PUBLISHED')
+        return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+    const post = await prisma.post.update({
+        where: { id: parseInt(id) },
+        data: {
+            status,
+            publishedAt: status === 'PUBLISHED' ? new Date() : undefined,
+        },
+    });
+    return NextResponse.json({ id: post.id, status: post.status });
+}
+
 export async function DELETE(_req: NextRequest, { params }: Params) {
     const session = await getSession();
     if (!session)

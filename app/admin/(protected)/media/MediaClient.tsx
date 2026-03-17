@@ -71,7 +71,18 @@ export default function MediaClient({ initialImages }: Props) {
     }
 
     async function copyUrl(url: string) {
-        await navigator.clipboard.writeText(url);
+        try {
+            await navigator.clipboard.writeText(url);
+        } catch {
+            // Fallback for non-HTTPS contexts
+            const el = document.createElement('textarea');
+            el.value = url;
+            el.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+        }
         setCopiedUrl(url);
         setTimeout(() => setCopiedUrl(null), 2000);
     }
@@ -146,21 +157,21 @@ export default function MediaClient({ initialImages }: Props) {
                     {images.map((img) => (
                         <div
                             key={img.filename}
-                            className="group relative aspect-square overflow-hidden rounded-lg border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
+                            className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
+                            onClick={() => setPreview(img)}
                         >
                             {/* Thumbnail */}
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={img.url}
                                 alt={img.filename}
-                                className="h-full w-full cursor-pointer object-cover transition-transform duration-200 group-hover:scale-105"
-                                onClick={() => setPreview(img)}
+                                className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
                                 loading="lazy"
                             />
 
-                            {/* Hover overlay */}
-                            <div className="absolute inset-0 flex flex-col justify-between bg-black/0 p-1.5 transition-all group-hover:bg-black/40">
-                                <div className="flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                            {/* Hover overlay — pointer-events-none so clicks pass through to parent */}
+                            <div className="pointer-events-none absolute inset-0 flex flex-col justify-between bg-black/0 p-1.5 transition-all group-hover:bg-black/40">
+                                <div className="pointer-events-auto flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                                     <button
                                         onClick={(e) => { e.stopPropagation(); copyUrl(img.url); }}
                                         className="rounded-md bg-white/90 p-1.5 text-gray-700 shadow hover:bg-white"
