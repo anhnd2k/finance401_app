@@ -119,7 +119,7 @@ export default function MultiPanelEditor({ allVersions, defaultLang, baseData }:
             </div>
 
             {/* Panels — horizontal scroll, side by side */}
-            <div className="flex gap-6 overflow-x-auto pb-4">
+            <div className={`flex gap-6 overflow-x-auto pb-4 ${openLangs.length === 1 ? 'justify-center' : ''}`}>
                 {openLangs.map((lang) => {
                     const panelData = getPanelData(lang);
                     const versionExists = allVersions.some((v) => v.language === lang);
@@ -127,7 +127,7 @@ export default function MultiPanelEditor({ allVersions, defaultLang, baseData }:
                         <div
                             // Key changes when a "new" version is saved and gets an id → remounts PostForm
                             key={`${lang}-${panelData.id ?? 'new'}`}
-                            className="min-w-[580px] max-w-3xl flex-1 rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900"
+                            className={`min-w-[580px] flex-1 rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900 ${openLangs.length === 1 ? 'max-w-3xl' : ''}`}
                         >
                             {/* Panel header */}
                             <div className="mb-5 flex items-center justify-between border-b border-gray-100 pb-4 dark:border-gray-800">

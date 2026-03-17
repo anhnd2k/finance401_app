@@ -16,6 +16,7 @@ import {
     Menu,
     X,
     Banana,
+    Images,
 } from 'lucide-react';
 
 const navItems = [
@@ -28,6 +29,11 @@ const navItems = [
         label: 'Posts',
         href: '/admin/posts',
         icon: FileText,
+    },
+    {
+        label: 'Media',
+        href: '/admin/media',
+        icon: Images,
     },
     {
         label: 'Categories',
