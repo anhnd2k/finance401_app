@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 const COOKIE_NAME = 'f401_session';
 const LOCALE_COOKIE = 'f401_lang';
 
+const IS_DEV = process.env.NODE_ENV === 'development';
+
 async function verifySession(token: string): Promise<boolean> {
     try {
         const dot = token.lastIndexOf('.');
@@ -37,23 +39,45 @@ export async function proxy(req: NextRequest) {
     const { pathname } = req.nextUrl;
     const host = req.headers.get('host') || '';
 
-    // Handle admin subdomain
-    if (host.startsWith('admin.')) {
+    // ================================================================
+    // ADMIN SUBDOMAIN: admin.runtocoast.com
+    // Trên local dev thì dùng /admin trực tiếp (không có subdomain)
+    // ================================================================
+    const isAdminSubdomain = !IS_DEV && host.startsWith('admin.');
+
+    if (isAdminSubdomain) {
+        // /login → rewrite thành /admin/login (ẩn /admin prefix khỏi URL)
+        if (pathname === '/login') {
+            return NextResponse.rewrite(new URL('/admin/login', req.url));
+        }
+
+        // Nếu path chưa có /admin prefix → rewrite thêm vào
         if (!pathname.startsWith('/admin')) {
             const newPath = '/admin' + (pathname === '/' ? '' : pathname);
             return NextResponse.rewrite(new URL(newPath, req.url));
         }
-        // Auth guard cho subdomain
-        if (pathname !== '/admin/login') {
+
+        // Đã login mà vào /login → redirect về /
+        if (pathname === '/admin/login') {
             const token = req.cookies.get(COOKIE_NAME)?.value;
-            if (!token || !(await verifySession(token))) {
-                return NextResponse.redirect(new URL('/login', req.url));
+            if (token && (await verifySession(token))) {
+                return NextResponse.redirect(new URL('/', req.url));
             }
+            return NextResponse.next();
         }
+
+        // Auth guard: chưa login → redirect về /login (URL đẹp, không có /admin)
+        const token = req.cookies.get(COOKIE_NAME)?.value;
+        if (!token || !(await verifySession(token))) {
+            return NextResponse.redirect(new URL('/login', req.url));
+        }
+
         return NextResponse.next();
     }
 
-    // Handle /en locale prefix
+    // ================================================================
+    // LOCALE: /en prefix
+    // ================================================================
     if (pathname === '/en' || pathname.startsWith('/en/')) {
         const newPath = pathname === '/en' ? '/' : pathname.slice(3);
         const newHeaders = new Headers(req.headers);
@@ -69,7 +93,9 @@ export async function proxy(req: NextRequest) {
         return response;
     }
 
-    // Admin auth guard (truy cập qua runtocoast.com/admin)
+    // ================================================================
+    // ADMIN AUTH GUARD: truy cập qua runtocoast.com/admin (hoặc local dev)
+    // ================================================================
     if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
         const token = req.cookies.get(COOKIE_NAME)?.value;
         if (!token || !(await verifySession(token))) {
