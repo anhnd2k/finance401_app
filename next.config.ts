@@ -15,16 +15,16 @@ const nextConfig: NextConfig = {
             {
                 protocol: 'https', hostname: '**' 
             },
-            {
-                protocol: 'http',        // chưa có SSL dùng http
-                hostname: '103.200.21.209',  // IP VPS
-                pathname: '/uploads/**',
-            },
             // {
-            //     protocol: 'https',
-            //     hostname: 'your-domain.com',
+            //     protocol: 'http',        // chưa có SSL dùng http
+            //     hostname: '103.200.21.209',  // IP VPS
             //     pathname: '/uploads/**',
-            // }
+            // },
+            {
+                protocol: 'https',
+                hostname: 'runtocoast.com',
+                pathname: '/uploads/**',
+            }
         ],
     },
 
