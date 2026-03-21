@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
     compress: true,
     reactStrictMode: true,
 
+    experimental: {
+        serverMinification: false,
+    },      
+
     images: {
         formats: ['image/avif', 'image/webp'],
         remotePatterns: [
