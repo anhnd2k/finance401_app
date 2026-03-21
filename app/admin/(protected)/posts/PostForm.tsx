@@ -14,6 +14,12 @@ import {
     AlertCircle,
 } from 'lucide-react';
 import { LOCALE_LABELS } from '@/lib/locale';
+import dynamic from 'next/dynamic';
+
+const RichTextEditor = dynamic(
+    () => import('./RichTextEditor'),
+    { ssr: false }
+);
 
 interface Category {
     id: number;
@@ -48,6 +54,15 @@ interface Props {
     lockedLanguage?: string;
     /** Called after a successful save instead of navigating away. Receives the saved post id. */
     onSuccess?: (savedId: number) => void;
+    /** If set, adds this id to the <form> element so external buttons can submit via form= attribute. */
+    formId?: string;
+    /** Hide the built-in action buttons (submit/cancel) at the bottom. */
+    hideActions?: boolean;
+    /** Called whenever saving or isEdit state changes — lets parent render action buttons. */
+    onSaveStateChange?: (state: {
+        saving: boolean;
+        isEdit: boolean;
+    }) => void;
 }
 
 type AutoSaveStatus =
@@ -68,6 +83,9 @@ export default function PostForm({
     initialData,
     lockedLanguage,
     onSuccess,
+    formId,
+    hideActions,
+    onSaveStateChange,
 }: Props) {
     const router = useRouter();
     const translationGroupId =
@@ -122,8 +140,6 @@ export default function PostForm({
     );
     const [tagSuggestions, setTagSuggestions] =
         useState<Tag[]>([]);
-    const [previewMode, setPreviewMode] =
-        useState(false);
     const [error, setError] = useState('');
     const [dupError, setDupError] =
         useState(false);
@@ -179,6 +195,12 @@ export default function PostForm({
         postIdRef.current = postId;
     }, [postId]);
 
+    // Notify parent of save state changes
+    useEffect(() => {
+        onSaveStateChange?.({ saving, isEdit });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [saving, isEdit]);
+
     useEffect(() => {
         fetch('/api/admin/categories')
             .then((r) => r.json())
@@ -216,7 +238,9 @@ export default function PostForm({
         function handleBeforeUnload() {
             if (
                 !isDirtyRef.current ||
-                !formStateRef.current.title.trim()
+                !formStateRef.current.title.trim() ||
+                formStateRef.current.status !==
+                    'DRAFT'
             )
                 return;
             const id = postIdRef.current;
@@ -291,6 +315,12 @@ export default function PostForm({
 
     function markDirty() {
         isDirtyRef.current = true;
+        // Only schedule auto-save for DRAFT posts
+        if (
+            formStateRef.current.status !==
+            'DRAFT'
+        )
+            return;
         if (autoSaveTimerRef.current)
             clearTimeout(
                 autoSaveTimerRef.current
@@ -302,6 +332,11 @@ export default function PostForm({
     }
 
     async function performAutoSave() {
+        if (
+            formStateRef.current.status !==
+            'DRAFT'
+        )
+            return;
         if (!formStateRef.current.title.trim())
             return;
         setAutoSaveStatus('saving');
@@ -481,6 +516,7 @@ export default function PostForm({
 
     return (
         <form
+            id={formId}
             onSubmit={handleSubmit}
             className="mx-auto max-w-3xl"
         >
@@ -554,11 +590,11 @@ export default function PostForm({
                     {error}
                 </div>
             )}
-            {saved && (
+            {/* {saved && (
                 <div className="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700 dark:bg-green-900/30 dark:text-green-400">
                     Saved successfully.
                 </div>
-            )}
+            )} */}
 
             <div className="mb-5">
                 <label className={labelClass}>
@@ -787,70 +823,19 @@ export default function PostForm({
             </div>
 
             <div className="mb-5">
-                <div className="mb-1.5 flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Content (HTML){' '}
-                        <span className="text-red-500">
-                            *
-                        </span>
-                    </label>
-                    <div className="flex overflow-hidden rounded-lg border border-gray-200 text-xs dark:border-gray-700">
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setPreviewMode(
-                                    false
-                                )
-                            }
-                            className={`px-3 py-1.5 font-medium transition-colors ${!previewMode ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'}`}
-                        >
-                            Write
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setPreviewMode(
-                                    true
-                                )
-                            }
-                            className={`px-3 py-1.5 font-medium transition-colors ${previewMode ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'}`}
-                        >
-                            Preview
-                        </button>
-                    </div>
-                </div>
-                {previewMode ? (
-                    <div
-                        className="min-h-[400px] overflow-y-auto rounded-lg border border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-800"
-                        style={{
-                            maxHeight:
-                                'calc(100vh - 200px)',
-                        }}
-                    >
-                        <div
-                            className="prose prose-sm max-w-none p-5 dark:prose-invert prose-headings:font-bold prose-a:text-blue-600 prose-img:rounded-xl"
-                            dangerouslySetInnerHTML={{
-                                __html:
-                                    content ||
-                                    '<p class="text-gray-400">Nothing to preview yet…</p>',
-                            }}
-                        />
-                    </div>
-                ) : (
-                    <textarea
-                        value={content}
-                        onChange={(e) => {
-                            setContent(
-                                e.target.value
-                            );
-                            markDirty();
-                        }}
-                        rows={40}
-                        required
-                        className={`${inputClass} font-mono text-xs`}
-                        placeholder="<p>Your content here…</p>"
-                    />
-                )}
+                <label className={labelClass}>
+                    Content{' '}
+                    <span className="text-red-500">
+                        *
+                    </span>
+                </label>
+                <RichTextEditor
+                    value={content}
+                    onChange={(html) => {
+                        setContent(html);
+                        markDirty();
+                    }}
+                />
             </div>
 
             <div className="mb-5">
@@ -900,32 +885,34 @@ export default function PostForm({
                 />
             </div>
 
-            <div className="flex items-center gap-4">
-                <button
-                    type="submit"
-                    disabled={saving}
-                    className="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
-                >
-                    {saving
-                        ? 'Saving…'
-                        : isEdit
-                          ? 'Update Post'
-                          : 'Create Post'}
-                </button>
-                {!onSuccess && (
+            {!hideActions && (
+                <div className="flex items-center gap-4">
                     <button
-                        type="button"
-                        onClick={() =>
-                            router.push(
-                                '/admin/posts'
-                            )
-                        }
-                        className="rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                        type="submit"
+                        disabled={saving}
+                        className="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
                     >
-                        Cancel
+                        {saving
+                            ? 'Saving…'
+                            : isEdit
+                              ? 'Update Post'
+                              : 'Create Post'}
                     </button>
-                )}
-            </div>
+                    {!onSuccess && (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                router.push(
+                                    '/admin/posts'
+                                )
+                            }
+                            className="rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                        >
+                            Cancel
+                        </button>
+                    )}
+                </div>
+            )}
         </form>
     );
 }
