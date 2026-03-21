@@ -15,6 +15,13 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
+                <link
+                    rel="preload"
+                    href="/fonts/Chiron_GoRound_TC/ChironGoRoundTC-VariableFont_wght.ttf"
+                    as="font"
+                    type="font/truetype"
+                    crossOrigin="anonymous"
+                />
                 <script
                     dangerouslySetInnerHTML={{
                         __html: `(function(){try{var s=localStorage.getItem('darkMode');var d=s==='true'||(s===null&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();`,

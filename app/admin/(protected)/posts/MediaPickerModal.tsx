@@ -18,6 +18,8 @@ interface ImageItem {
 interface Props {
     onInsert: (url: string, align: Align) => void;
     onClose: () => void;
+    /** Pre-select the image matching this URL */
+    initialUrl?: string;
 }
 
 function formatSize(bytes: number) {
@@ -43,7 +45,7 @@ async function getCroppedBlob(img: HTMLImageElement, crop: PixelCrop): Promise<B
     );
 }
 
-export default function MediaPickerModal({ onInsert, onClose }: Props) {
+export default function MediaPickerModal({ onInsert, onClose, initialUrl }: Props) {
     const [images, setImages] = useState<ImageItem[]>([]);
     const [selected, setSelected] = useState<ImageItem | null>(null);
     const [align, setAlign] = useState<Align>('center');
@@ -59,8 +61,16 @@ export default function MediaPickerModal({ onInsert, onClose }: Props) {
     useEffect(() => {
         fetch('/api/admin/uploads')
             .then(r => r.json())
-            .then(d => setImages(d.images ?? []))
+            .then(d => {
+                const list: ImageItem[] = d.images ?? [];
+                setImages(list);
+                if (initialUrl) {
+                    const match = list.find(img => img.url === initialUrl);
+                    if (match) setSelected(match);
+                }
+            })
             .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     async function uploadFiles(files: File[]) {

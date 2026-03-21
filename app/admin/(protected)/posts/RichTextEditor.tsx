@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, lazy, Suspense } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, ReactNodeViewRenderer } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import TextAlign from '@tiptap/extension-text-align';
 import Image from '@tiptap/extension-image';
@@ -17,6 +17,7 @@ import {
     Quote,
     ImageIcon,
 } from 'lucide-react';
+import ImageNodeView from './ImageNodeView';
 
 const MediaPickerModal = lazy(() => import('./MediaPickerModal'));
 
@@ -64,18 +65,21 @@ function TBtn({
     );
 }
 
-const ALIGN_STYLES: Record<Align, string> = {
+export const ALIGN_STYLES: Record<Align, string> = {
     left: 'float: left; margin: 0 1rem 1rem 0; max-width: 50%;',
     center: 'display: block; margin: 0 auto; max-width: 100%;',
     right: 'float: right; margin: 0 0 1rem 1rem; max-width: 50%;',
 };
 
-const ImageWithStyle = Image.extend({
+const ClickableImage = Image.extend({
     addAttributes() {
         return {
             ...this.parent?.(),
             style: { default: null },
         };
+    },
+    addNodeView() {
+        return ReactNodeViewRenderer(ImageNodeView);
     },
 });
 
@@ -88,7 +92,7 @@ export default function RichTextEditor({ value, onChange }: Props) {
         extensions: [
             StarterKit.configure({ heading: { levels: [1, 2, 3, 4] } }),
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
-            ImageWithStyle,
+            ClickableImage,
         ],
         content: value,
         editorProps: {
@@ -270,7 +274,7 @@ export default function RichTextEditor({ value, onChange }: Props) {
 
             {/* WYSIWYG */}
             {mode === 'wysiwyg' && (
-                <div className="overflow-y-auto" style={{ minHeight: '400px', maxHeight: 'calc(100vh - 200px)' }}>
+                <div className="overflow-y-auto [&_.ProseMirror]:break-words" style={{ minHeight: '400px', maxHeight: 'calc(100vh - 200px)' }}>
                     <EditorContent editor={editor} />
                 </div>
             )}
@@ -281,7 +285,7 @@ export default function RichTextEditor({ value, onChange }: Props) {
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     className="w-full bg-gray-50 p-4 font-mono text-xs text-gray-800 focus:outline-none dark:bg-gray-800/50 dark:text-gray-200"
-                    style={{ minHeight: '400px', maxHeight: 'calc(100vh - 200px)', resize: 'none' }}
+                    style={{ minHeight: '400px', maxHeight: 'calc(100vh - 200px)', resize: 'none', wordBreak: 'break-all' }}
                     spellCheck={false}
                 />
             )}
@@ -289,7 +293,7 @@ export default function RichTextEditor({ value, onChange }: Props) {
             {/* Preview */}
             {mode === 'preview' && (
                 <div
-                    className="prose prose-sm max-w-none overflow-y-auto p-4 dark:prose-invert prose-headings:font-bold prose-a:text-blue-600 prose-img:rounded-xl"
+                    className="prose prose-sm max-w-none overflow-y-auto break-words p-4 dark:prose-invert prose-headings:font-bold prose-a:text-blue-600 prose-img:rounded-xl"
                     style={{ minHeight: '400px', maxHeight: 'calc(100vh - 200px)' }}
                     dangerouslySetInnerHTML={{
                         __html: value || '<p class="text-gray-400 not-prose">Nothing to preview yet…</p>',

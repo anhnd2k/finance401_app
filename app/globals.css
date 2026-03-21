@@ -93,6 +93,12 @@
     height: 0;
 }
 
+/* Empty paragraphs (blank lines from pressing Enter) must keep their height */
+.ProseMirror p:empty,
+.prose p:empty {
+    min-height: 1em;
+}
+
 /* Logo animation keyframes */
 @keyframes slide-from-top {
     from { transform: translateY(-120%); opacity: 0; }
