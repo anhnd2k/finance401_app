@@ -35,15 +35,13 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
     const displayWidth = resizeWidth ?? savedWidth ?? undefined;
     const align = detectAlign(style);
 
-    // NodeViewWrapper styles: float for left/right; flex-center for center alignment
+    // Float styles on NodeViewWrapper for left/right; center is handled on inner div
     const wrapperStyle: React.CSSProperties =
-        align === 'center'
-            ? { display: 'flex', justifyContent: 'center' }
-            : align === 'left'
-              ? { float: 'left', margin: '0 1rem 1rem 0', maxWidth: '50%' }
-              : align === 'right'
-                ? { float: 'right', margin: '0 0 1rem 1rem', maxWidth: '50%' }
-                : {};
+        align === 'left'
+            ? { float: 'left', margin: '0 1rem 1rem 0', maxWidth: '50%' }
+            : align === 'right'
+              ? { float: 'right', margin: '0 0 1rem 1rem', maxWidth: '50%' }
+              : {};
 
     function startResize(e: React.MouseEvent) {
         e.preventDefault();
@@ -72,8 +70,10 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
 
     return (
         <NodeViewWrapper style={wrapperStyle}>
+            {/* For center: block + margin auto + fit-content width → always centered regardless of resize */}
             <div
-                className={`group relative inline-block leading-[0] ${selected ? 'ring-2 ring-blue-500 ring-offset-1 rounded-xl' : ''}`}
+                className={`group relative leading-[0] ${align === 'center' ? 'block mx-auto' : 'inline-block'} ${selected ? 'ring-2 ring-blue-500 ring-offset-1 rounded-xl' : ''}`}
+                style={align === 'center' ? { width: displayWidth ? `${displayWidth}px` : 'fit-content' } : undefined}
             >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img

@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || '/app/uploads';
-const UPLOAD_BASE_URL = process.env.UPLOAD_BASE_URL || 'https://runtocoast.com/';
+const UPLOAD_BASE_URL = process.env.UPLOAD_BASE_URL || 'https://runtocoast.com';
 
 function ensureUploadDir() {
     if (!fs.existsSync(UPLOAD_DIR)) {
