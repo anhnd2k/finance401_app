@@ -17,6 +17,8 @@ import {
     AlignJustify,
     Quote,
     ImageIcon,
+    Maximize2,
+    Minimize2,
 } from 'lucide-react';
 import ImageNodeView from './ImageNodeView';
 
@@ -30,6 +32,9 @@ type HeadingLevel = 1 | 2 | 3 | 4;
 interface Props {
     value: string;
     onChange: (html: string) => void;
+    formId?: string;
+    saving?: boolean;
+    isEditPost?: boolean;
 }
 
 function Divider() {
@@ -133,9 +138,10 @@ const ClickableImage = Image.extend({
     },
 });
 
-export default function RichTextEditor({ value, onChange }: Props) {
+export default function RichTextEditor({ value, onChange, formId, saving, isEditPost }: Props) {
     const [mode, setMode] = useState<Mode>('wysiwyg');
     const [showPicker, setShowPicker] = useState(false);
+    const [fullscreen, setFullscreen] = useState(false);
 
     const editor = useEditor({
         immediatelyRender: false,
@@ -183,10 +189,14 @@ export default function RichTextEditor({ value, onChange }: Props) {
 
     const isEdit = mode === 'wysiwyg';
 
+    const contentStyle = fullscreen
+        ? { height: 'calc(100vh - 48px)' }
+        : { minHeight: '400px', maxHeight: 'calc(100vh - 200px)' };
+
     return (
-        <div className="overflow-hidden rounded-lg border border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-900">
+        <div className={`overflow-hidden rounded-lg border border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-900 ${fullscreen ? 'fixed inset-0 z-50 flex flex-col rounded-none border-0' : ''}`}>
             {/* Toolbar */}
-            <div className="flex flex-wrap items-center gap-0.5 border-b border-gray-200 bg-gray-50 px-2 py-1.5 dark:border-gray-700 dark:bg-gray-800">
+            <div className="flex flex-wrap items-center gap-0.5 border-b border-gray-200 bg-gray-50 px-2 py-1.5 dark:border-gray-700 dark:bg-gray-800 shrink-0">
                 {/* Block type */}
                 <select
                     value={isEdit ? getBlockType() : 'paragraph'}
@@ -340,35 +350,64 @@ export default function RichTextEditor({ value, onChange }: Props) {
                         </button>
                     ))}
                 </div>
+
+                {/* Fullscreen toggle */}
+                <button
+                    type="button"
+                    onClick={() => setFullscreen((v) => !v)}
+                    title={fullscreen ? 'Thu nhỏ' : 'Mở rộng toàn màn hình'}
+                    className="ml-1 rounded p-1.5 text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+                >
+                    {fullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                </button>
+
+                {/* Submit button — only shown in fullscreen */}
+                {fullscreen && formId && (
+                    <button
+                        type="submit"
+                        form={formId}
+                        disabled={saving}
+                        className="ml-2 rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+                    >
+                        {saving ? 'Saving…' : isEditPost ? 'Update Post' : 'Create Post'}
+                    </button>
+                )}
             </div>
 
             {/* WYSIWYG */}
             {mode === 'wysiwyg' && (
-                <div className="overflow-y-auto [&_.ProseMirror]:break-words" style={{ minHeight: '400px', maxHeight: 'calc(100vh - 200px)' }}>
-                    <EditorContent editor={editor} />
+                <div className="overflow-y-auto [&_.ProseMirror]:break-words" style={contentStyle}>
+                    <div className={fullscreen ? 'mx-auto w-full max-w-3xl' : ''}>
+                        <EditorContent editor={editor} />
+                    </div>
                 </div>
             )}
 
             {/* HTML source */}
             {mode === 'html' && (
-                <textarea
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    className="w-full bg-gray-50 p-4 font-mono text-xs text-gray-800 focus:outline-none dark:bg-gray-800/50 dark:text-gray-200"
-                    style={{ minHeight: '400px', maxHeight: 'calc(100vh - 200px)', resize: 'none', wordBreak: 'break-all' }}
-                    spellCheck={false}
-                />
+                <div className="overflow-y-auto" style={contentStyle}>
+                    <div className={fullscreen ? 'mx-auto w-full max-w-3xl h-full' : 'h-full'}>
+                        <textarea
+                            value={value}
+                            onChange={(e) => onChange(e.target.value)}
+                            className="h-full min-h-full w-full bg-gray-50 p-4 font-mono text-xs text-gray-800 focus:outline-none dark:bg-gray-800/50 dark:text-gray-200"
+                            style={{ resize: 'none', wordBreak: 'break-all' }}
+                            spellCheck={false}
+                        />
+                    </div>
+                </div>
             )}
 
             {/* Preview */}
             {mode === 'preview' && (
-                <div
-                    className="prose prose-sm max-w-none overflow-y-auto break-words p-4 dark:prose-invert prose-headings:font-bold prose-a:text-blue-600 prose-img:rounded-xl"
-                    style={{ minHeight: '400px', maxHeight: 'calc(100vh - 200px)' }}
-                    dangerouslySetInnerHTML={{
-                        __html: value || '<p class="text-gray-400 not-prose">Nothing to preview yet…</p>',
-                    }}
-                />
+                <div className="overflow-y-auto" style={contentStyle}>
+                    <div
+                        className="prose prose-lg mx-auto max-w-3xl break-words p-6 dark:prose-invert prose-headings:font-bold prose-a:text-blue-600 prose-img:rounded-xl"
+                        dangerouslySetInnerHTML={{
+                            __html: value || '<p class="text-gray-400 not-prose">Nothing to preview yet…</p>',
+                        }}
+                    />
+                </div>
             )}
 
             {showPicker && (

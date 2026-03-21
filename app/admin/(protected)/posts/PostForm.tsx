@@ -491,6 +491,7 @@ export default function PostForm({
                 setPostId(data.id);
                 if (onSuccess) {
                     setSaved(true);
+                    router.refresh(); // invalidate Router Cache so re-entering this page fetches fresh data
                     onSuccess(data.id);
                 } else {
                     router.push('/admin/posts');
@@ -842,6 +843,9 @@ export default function PostForm({
                         setContent(html);
                         markDirty();
                     }}
+                    formId={formId}
+                    saving={saving}
+                    isEditPost={isEdit}
                 />
             </div>
 
