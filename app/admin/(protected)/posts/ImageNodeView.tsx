@@ -3,7 +3,7 @@
 import { useState, useRef, lazy, Suspense } from 'react';
 import { NodeViewWrapper } from '@tiptap/react';
 import type { ReactNodeViewProps } from '@tiptap/react';
-import { Pencil, Trash2, GripVertical } from 'lucide-react';
+import { Pencil, Trash2, GripVertical, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 
 const MediaPickerModal = lazy(() => import('./MediaPickerModal'));
 
@@ -72,8 +72,34 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
                     draggable={false}
                 />
 
-                {/* Action buttons — no backdrop, just buttons */}
-                <div className="pointer-events-none absolute right-2 top-2 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto">
+                {/* Toolbar — no backdrop, just buttons */}
+                <div className="pointer-events-none absolute left-2 right-2 top-2 flex flex-wrap gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto">
+                    {/* Alignment */}
+                    {([
+                        { align: 'left' as Align, Icon: AlignLeft, label: 'Trái' },
+                        { align: 'center' as Align, Icon: AlignCenter, label: 'Giữa' },
+                        { align: 'right' as Align, Icon: AlignRight, label: 'Phải' },
+                    ]).map(({ align, Icon, label }) => {
+                        const active = style === ALIGN_STYLES[align];
+                        return (
+                            <button
+                                key={align}
+                                type="button"
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    updateAttributes({ style: ALIGN_STYLES[align] });
+                                }}
+                                title={label}
+                                className={`flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold shadow-md ring-1 ring-black/10 ${active ? 'bg-blue-600 text-white' : 'bg-white/95 text-gray-700 hover:bg-white'}`}
+                            >
+                                <Icon className="h-3 w-3" />
+                            </button>
+                        );
+                    })}
+
+                    <div className="w-px self-stretch bg-black/10" />
+
                     <button
                         type="button"
                         onMouseDown={(e) => {
