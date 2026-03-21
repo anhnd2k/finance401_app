@@ -58,6 +58,8 @@ export default function MultiPanelEditor({
     baseData,
 }: Props) {
     const router = useRouter();
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
     const [openLangs, setOpenLangs] = useState<
         Locale[]
     >([defaultLang as Locale]);
@@ -144,7 +146,7 @@ export default function MultiPanelEditor({
 
     const isSingle = openLangs.length === 1;
 
-    const toast$ = createPortal(
+    const toast$ = mounted && createPortal(
         <div
             className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-xl border border-green-200 bg-white px-4 py-3 shadow-lg transition-all duration-300 dark:border-green-800 dark:bg-gray-900 ${
                 toast
