@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import {
     usePathname,
@@ -171,21 +171,24 @@ export default function AdminShell({
     const router = useRouter();
     const [sidebarOpen, setSidebarOpen] =
         useState(false);
-    const [darkMode, setDarkMode] = useState(false);
-
-    // Init dark mode from localStorage / class
-    useEffect(() => {
-        const saved = localStorage.getItem('adminDarkMode');
-        const isDark = saved !== null
-            ? saved === 'true'
-            : document.documentElement.classList.contains('dark');
-        setDarkMode(isDark);
-        document.documentElement.classList.toggle('dark', isDark);
-    }, []);
+    // useSyncExternalStore: server snapshot = false, client snapshot = reads localStorage
+    // avoids hydration mismatch and "setState in effect" error
+    const [darkOverride, setDarkOverride] = useState<boolean | null>(null);
+    const storedDark = useSyncExternalStore(
+        () => () => {},
+        () => {
+            const saved = localStorage.getItem('adminDarkMode');
+            return saved !== null
+                ? saved === 'true'
+                : document.documentElement.classList.contains('dark');
+        },
+        () => false,
+    );
+    const darkMode = darkOverride ?? storedDark;
 
     function toggleDarkMode() {
         const next = !darkMode;
-        setDarkMode(next);
+        setDarkOverride(next);
         document.documentElement.classList.toggle('dark', next);
         localStorage.setItem('adminDarkMode', String(next));
     }
