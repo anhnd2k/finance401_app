@@ -172,7 +172,7 @@ export default function AdminShell({
     }
 
     return (
-        <div className="flex min-h-screen">
+        <div className="flex h-screen">
             {/* Desktop sidebar */}
             <aside className="hidden w-60 shrink-0 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 md:flex">
                 <SidebarContent

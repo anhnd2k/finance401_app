@@ -12,12 +12,18 @@ import {
     X,
     Check,
     AlertCircle,
+    ImageIcon,
 } from 'lucide-react';
 import { LOCALE_LABELS } from '@/lib/locale';
 import dynamic from 'next/dynamic';
 
 const RichTextEditor = dynamic(
     () => import('./RichTextEditor'),
+    { ssr: false }
+);
+
+const MediaPickerModal = dynamic(
+    () => import('./MediaPickerModal'),
     { ssr: false }
 );
 
@@ -131,6 +137,7 @@ export default function PostForm({
     const [images, setImages] = useState(
         initialData?.images ?? ''
     );
+    const [showThumbPicker, setShowThumbPicker] = useState(false);
 
     const [categories, setCategories] = useState<
         Category[]
@@ -840,36 +847,60 @@ export default function PostForm({
 
             <div className="mb-5">
                 <label className={labelClass}>
-                    Thumbnail URL
+                    Thumbnail
                 </label>
-                <input
-                    type="url"
-                    value={thumbnail}
-                    onChange={(e) => {
-                        setThumbnail(
-                            e.target.value
-                        );
-                        markDirty();
-                    }}
-                    className={inputClass}
-                    placeholder="https://example.com/image.jpg"
-                />
-                {thumbnail && (
-                    <img
-                        src={thumbnail}
-                        alt="thumbnail preview"
-                        className="mt-2 h-24 rounded-lg object-cover"
-                        onError={(e) =>
-                            ((
-                                e.target as HTMLImageElement
-                            ).style.display =
-                                'none')
-                        }
-                    />
+                {thumbnail ? (
+                    <div className="relative inline-block">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={thumbnail}
+                            alt="thumbnail"
+                            className="h-36 w-auto rounded-lg object-cover shadow"
+                            onError={(e) =>
+                                ((e.target as HTMLImageElement).style.display = 'none')
+                            }
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center gap-2 rounded-lg bg-black/40 opacity-0 transition-opacity hover:opacity-100">
+                            <button
+                                type="button"
+                                onClick={() => setShowThumbPicker(true)}
+                                className="rounded-lg bg-white/90 px-3 py-1.5 text-xs font-semibold text-gray-800 hover:bg-white"
+                            >
+                                Change
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => { setThumbnail(''); markDirty(); }}
+                                className="rounded-lg bg-red-500/90 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={() => setShowThumbPicker(true)}
+                        className="flex h-24 w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-sm text-gray-400 transition-colors hover:border-blue-400 hover:text-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500"
+                    >
+                        <ImageIcon className="h-5 w-5" />
+                        Chọn ảnh thumbnail
+                    </button>
                 )}
             </div>
 
-            <div className="mb-8">
+            {showThumbPicker && (
+                <MediaPickerModal
+                    onInsert={(url) => {
+                        setThumbnail(url);
+                        markDirty();
+                        setShowThumbPicker(false);
+                    }}
+                    onClose={() => setShowThumbPicker(false)}
+                />
+            )}
+
+            {/* <div className="mb-8">
                 <label className={labelClass}>
                     Additional Image URLs
                 </label>
@@ -883,7 +914,7 @@ export default function PostForm({
                     className={inputClass}
                     placeholder="One URL per line"
                 />
-            </div>
+            </div> */}
 
             {!hideActions && (
                 <div className="flex items-center gap-4">
