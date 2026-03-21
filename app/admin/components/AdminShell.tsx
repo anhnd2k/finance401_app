@@ -17,6 +17,8 @@ import {
     X,
     Banana,
     Images,
+    Sun,
+    Moon,
 } from 'lucide-react';
 
 const navItems = [
@@ -57,6 +59,8 @@ interface SidebarProps {
     role: string;
     pathname: string;
     onLogout: () => void;
+    darkMode: boolean;
+    onToggleDark: () => void;
 }
 
 function SidebarContent({
@@ -64,6 +68,8 @@ function SidebarContent({
     role,
     pathname,
     onLogout,
+    darkMode,
+    onToggleDark,
 }: SidebarProps) {
     return (
         <>
@@ -129,13 +135,22 @@ function SidebarContent({
                         </p>
                     </div>
                 </Link>
-                <button
-                    onClick={onLogout}
-                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
-                >
-                    <LogOut className="h-4 w-4" />
-                    Sign out
-                </button>
+                <div className="mb-1 flex items-center justify-between">
+                    <button
+                        onClick={onLogout}
+                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+                    >
+                        <LogOut className="h-4 w-4" />
+                        Sign out
+                    </button>
+                    <button
+                        onClick={onToggleDark}
+                        title={darkMode ? 'Switch to Light' : 'Switch to Dark'}
+                        className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+                    >
+                        {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                    </button>
+                </div>
             </div>
         </>
     );
@@ -156,6 +171,24 @@ export default function AdminShell({
     const router = useRouter();
     const [sidebarOpen, setSidebarOpen] =
         useState(false);
+    const [darkMode, setDarkMode] = useState(false);
+
+    // Init dark mode from localStorage / class
+    useEffect(() => {
+        const saved = localStorage.getItem('adminDarkMode');
+        const isDark = saved !== null
+            ? saved === 'true'
+            : document.documentElement.classList.contains('dark');
+        setDarkMode(isDark);
+        document.documentElement.classList.toggle('dark', isDark);
+    }, []);
+
+    function toggleDarkMode() {
+        const next = !darkMode;
+        setDarkMode(next);
+        document.documentElement.classList.toggle('dark', next);
+        localStorage.setItem('adminDarkMode', String(next));
+    }
 
     // Close sidebar on route change
     useEffect(() => {
@@ -180,6 +213,8 @@ export default function AdminShell({
                     role={role}
                     pathname={pathname}
                     onLogout={handleLogout}
+                    darkMode={darkMode}
+                    onToggleDark={toggleDarkMode}
                 />
             </aside>
 
@@ -215,6 +250,8 @@ export default function AdminShell({
                     role={role}
                     pathname={pathname}
                     onLogout={handleLogout}
+                    darkMode={darkMode}
+                    onToggleDark={toggleDarkMode}
                 />
             </aside>
 
@@ -231,9 +268,16 @@ export default function AdminShell({
                     >
                         <Menu className="h-5 w-5" />
                     </button>
-                    <span className="font-semibold text-gray-900 dark:text-white">
+                    <span className="flex-1 font-semibold text-gray-900 dark:text-white">
                         runtocoast Admin
                     </span>
+                    <button
+                        onClick={toggleDarkMode}
+                        title={darkMode ? 'Switch to Light' : 'Switch to Dark'}
+                        className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                    >
+                        {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                    </button>
                 </header>
 
                 <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-950">

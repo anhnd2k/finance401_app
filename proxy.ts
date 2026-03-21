@@ -35,8 +35,25 @@ async function verifySession(token: string): Promise<boolean> {
 
 export async function proxy(req: NextRequest) {
     const { pathname } = req.nextUrl;
+    const host = req.headers.get('host') || '';
 
-    // Handle /en locale prefix: rewrite to base path and set locale cookie + header
+    // Handle admin subdomain
+    if (host.startsWith('admin.')) {
+        if (!pathname.startsWith('/admin')) {
+            const newPath = '/admin' + (pathname === '/' ? '' : pathname);
+            return NextResponse.rewrite(new URL(newPath, req.url));
+        }
+        // Auth guard cho subdomain
+        if (pathname !== '/admin/login') {
+            const token = req.cookies.get(COOKIE_NAME)?.value;
+            if (!token || !(await verifySession(token))) {
+                return NextResponse.redirect(new URL('/login', req.url));
+            }
+        }
+        return NextResponse.next();
+    }
+
+    // Handle /en locale prefix
     if (pathname === '/en' || pathname.startsWith('/en/')) {
         const newPath = pathname === '/en' ? '/' : pathname.slice(3);
         const newHeaders = new Headers(req.headers);
@@ -52,7 +69,7 @@ export async function proxy(req: NextRequest) {
         return response;
     }
 
-    // Admin auth guard
+    // Admin auth guard (truy cập qua runtocoast.com/admin)
     if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
         const token = req.cookies.get(COOKIE_NAME)?.value;
         if (!token || !(await verifySession(token))) {
@@ -64,5 +81,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/admin/:path*', '/en', '/en/:path*'],
+    matcher: ['/admin/:path*', '/en', '/en/:path*', '/'],
 };
