@@ -3,17 +3,24 @@
 import { useState, useRef, lazy, Suspense } from 'react';
 import { NodeViewWrapper } from '@tiptap/react';
 import type { ReactNodeViewProps } from '@tiptap/react';
-import { Pencil, Trash2, GripVertical, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import { Pencil, Trash2, GripVertical } from 'lucide-react';
 
 const MediaPickerModal = lazy(() => import('./MediaPickerModal'));
 
 type Align = 'left' | 'center' | 'right';
 
-const ALIGN_STYLES: Record<Align, string> = {
+export const ALIGN_STYLES: Record<Align, string> = {
     left: 'float: left; margin: 0 1rem 1rem 0; max-width: 50%;',
     center: 'display: block; margin: 0 auto; max-width: 100%;',
     right: 'float: right; margin: 0 0 1rem 1rem; max-width: 50%;',
 };
+
+function detectAlign(style: string): Align | null {
+    if (style.includes('margin: 0 auto')) return 'center';
+    if (style.includes('float: left')) return 'left';
+    if (style.includes('float: right')) return 'right';
+    return null;
+}
 
 export default function ImageNodeView({ node, updateAttributes, deleteNode, selected }: ReactNodeViewProps) {
     const [showPicker, setShowPicker] = useState(false);
@@ -26,6 +33,17 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
     const savedWidth: number | null = node.attrs.width ?? null;
 
     const displayWidth = resizeWidth ?? savedWidth ?? undefined;
+    const align = detectAlign(style);
+
+    // NodeViewWrapper styles: float for left/right; flex-center for center alignment
+    const wrapperStyle: React.CSSProperties =
+        align === 'center'
+            ? { display: 'flex', justifyContent: 'center' }
+            : align === 'left'
+              ? { float: 'left', margin: '0 1rem 1rem 0', maxWidth: '50%' }
+              : align === 'right'
+                ? { float: 'right', margin: '0 0 1rem 1rem', maxWidth: '50%' }
+                : {};
 
     function startResize(e: React.MouseEvent) {
         e.preventDefault();
@@ -37,14 +55,12 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
         const aspectRatio = naturalH / naturalW;
 
         function onMouseMove(ev: MouseEvent) {
-            const newWidth = Math.max(60, startWidth + (ev.clientX - startX));
-            setResizeWidth(newWidth);
+            setResizeWidth(Math.max(60, startWidth + (ev.clientX - startX)));
         }
 
         function onMouseUp(ev: MouseEvent) {
             const newWidth = Math.max(60, startWidth + (ev.clientX - startX));
-            const newHeight = Math.round(newWidth * aspectRatio);
-            updateAttributes({ width: newWidth, height: newHeight });
+            updateAttributes({ width: newWidth, height: Math.round(newWidth * aspectRatio) });
             setResizeWidth(null);
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
@@ -53,8 +69,6 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
     }
-
-    const wrapperStyle = style ? parseInlineStyle(style) : {};
 
     return (
         <NodeViewWrapper style={wrapperStyle}>
@@ -66,40 +80,13 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
                     ref={imgRef}
                     src={src}
                     alt={alt}
-                    width={displayWidth}
                     className="block rounded-xl max-w-full"
                     style={{ width: displayWidth ? `${displayWidth}px` : undefined, height: 'auto' }}
                     draggable={false}
                 />
 
-                {/* Toolbar — no backdrop, just buttons */}
-                <div className="pointer-events-none absolute left-2 right-2 top-2 flex flex-wrap gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto">
-                    {/* Alignment */}
-                    {([
-                        { align: 'left' as Align, Icon: AlignLeft, label: 'Trái' },
-                        { align: 'center' as Align, Icon: AlignCenter, label: 'Giữa' },
-                        { align: 'right' as Align, Icon: AlignRight, label: 'Phải' },
-                    ]).map(({ align, Icon, label }) => {
-                        const active = style === ALIGN_STYLES[align];
-                        return (
-                            <button
-                                key={align}
-                                type="button"
-                                onMouseDown={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    updateAttributes({ style: ALIGN_STYLES[align] });
-                                }}
-                                title={label}
-                                className={`flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold shadow-md ring-1 ring-black/10 ${active ? 'bg-blue-600 text-white' : 'bg-white/95 text-gray-700 hover:bg-white'}`}
-                            >
-                                <Icon className="h-3 w-3" />
-                            </button>
-                        );
-                    })}
-
-                    <div className="w-px self-stretch bg-black/10" />
-
+                {/* Toolbar */}
+                <div className="pointer-events-none absolute left-2 right-2 top-2 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto">
                     <button
                         type="button"
                         onMouseDown={(e) => {
@@ -126,7 +113,7 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
                     </button>
                 </div>
 
-                {/* Resize handle — bottom-right corner */}
+                {/* Resize handle */}
                 <div
                     className="pointer-events-none absolute bottom-1 right-1 opacity-0 transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto"
                     onMouseDown={startResize}
@@ -152,16 +139,4 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
             )}
         </NodeViewWrapper>
     );
-}
-
-function parseInlineStyle(style: string): Record<string, string> {
-    const result: Record<string, string> = {};
-    style.split(';').forEach((rule) => {
-        const [prop, val] = rule.split(':').map((s) => s.trim());
-        if (prop && val) {
-            const camel = prop.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
-            result[camel] = val;
-        }
-    });
-    return result;
 }
