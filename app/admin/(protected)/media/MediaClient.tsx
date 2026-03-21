@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Upload, Copy, Trash2, X, Check, Image as ImageIcon } from 'lucide-react';
 
 interface ImageItem {
@@ -200,8 +201,8 @@ export default function MediaClient({ initialImages }: Props) {
                 </div>
             )}
 
-            {/* Preview modal */}
-            {preview && (
+            {/* Preview modal — portal to body so fixed covers full viewport */}
+            {preview && createPortal(
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
                     onClick={() => setPreview(null)}
@@ -249,11 +250,12 @@ export default function MediaClient({ initialImages }: Props) {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
-            {/* Delete confirm dialog */}
-            {deleteConfirm && (
+            {/* Delete confirm dialog — portal to body */}
+            {deleteConfirm && createPortal(
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
                     onClick={() => setDeleteConfirm(null)}
@@ -279,7 +281,8 @@ export default function MediaClient({ initialImages }: Props) {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
