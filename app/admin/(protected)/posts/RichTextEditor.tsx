@@ -2,6 +2,7 @@
 
 import { useState, lazy, Suspense } from 'react';
 import { useEditor, EditorContent, ReactNodeViewRenderer } from '@tiptap/react';
+import { Extension } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import TextAlign from '@tiptap/extension-text-align';
 import Image from '@tiptap/extension-image';
@@ -65,6 +66,55 @@ function TBtn({
     );
 }
 
+const LINE_HEIGHTS = [
+    { label: 'Default', value: '' },
+    { label: '1.0', value: '1' },
+    { label: '1.25', value: '1.25' },
+    { label: '1.5', value: '1.5' },
+    { label: '1.75', value: '1.75' },
+    { label: '2.0', value: '2' },
+    { label: '2.5', value: '2.5' },
+    { label: '3.0', value: '3' },
+];
+
+declare module '@tiptap/core' {
+    interface Commands<ReturnType> {
+        lineHeight: {
+            setLineHeight: (lineHeight: string) => ReturnType;
+            unsetLineHeight: () => ReturnType;
+        };
+    }
+}
+
+const LineHeight = Extension.create({
+    name: 'lineHeight',
+    addGlobalAttributes() {
+        return [{
+            types: ['paragraph', 'heading'],
+            attributes: {
+                lineHeight: {
+                    default: null,
+                    parseHTML: (el: HTMLElement) => el.style.lineHeight || null,
+                    renderHTML: (attrs: Record<string, string>) =>
+                        attrs.lineHeight ? { style: `line-height: ${attrs.lineHeight}` } : {},
+                },
+            },
+        }];
+    },
+    addCommands() {
+        return {
+            setLineHeight: (lineHeight: string) => ({ commands }) =>
+                (['paragraph', 'heading'] as const).every((t) =>
+                    commands.updateAttributes(t, { lineHeight: lineHeight || null })
+                ),
+            unsetLineHeight: () => ({ commands }) =>
+                (['paragraph', 'heading'] as const).every((t) =>
+                    commands.resetAttributes(t, 'lineHeight')
+                ),
+        };
+    },
+});
+
 export const ALIGN_STYLES: Record<Align, string> = {
     left: 'float: left; margin: 0 1rem 1rem 0; max-width: 50%;',
     center: 'display: block; margin: 0 auto; max-width: 100%;',
@@ -92,6 +142,7 @@ export default function RichTextEditor({ value, onChange }: Props) {
         extensions: [
             StarterKit.configure({ heading: { levels: [1, 2, 3, 4] } }),
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
+            LineHeight,
             ClickableImage,
         ],
         content: value,
@@ -237,6 +288,25 @@ export default function RichTextEditor({ value, onChange }: Props) {
                 >
                     <Quote className="h-4 w-4" />
                 </TBtn>
+
+                <Divider />
+
+                {/* Line height */}
+                <select
+                    value={isEdit ? (editor?.getAttributes('paragraph').lineHeight ?? editor?.getAttributes('heading').lineHeight ?? '') : ''}
+                    onChange={(e) => {
+                        if (!editor) return;
+                        if (e.target.value) editor.chain().focus().setLineHeight(e.target.value).run();
+                        else editor.chain().focus().unsetLineHeight().run();
+                    }}
+                    disabled={!isEdit}
+                    title="Line Height"
+                    className="mr-1 rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 focus:outline-none disabled:opacity-40 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                >
+                    {LINE_HEIGHTS.map((lh) => (
+                        <option key={lh.value} value={lh.value}>{lh.label}</option>
+                    ))}
+                </select>
 
                 <Divider />
 

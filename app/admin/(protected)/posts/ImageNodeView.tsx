@@ -22,21 +22,25 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
     const style: string = node.attrs.style ?? '';
     const alt: string = node.attrs.alt ?? '';
 
+    // Float/margin/max-width go on NodeViewWrapper so document flow works correctly.
+    // The inner div is inline-block to tightly hug the image — overlay will match exactly.
+    const wrapperStyle = style ? parseInlineStyle(style) : {};
+
     return (
-        <NodeViewWrapper>
+        <NodeViewWrapper style={wrapperStyle}>
+            {/* inline-block so this div is exactly as wide/tall as the image */}
             <div
-                className={`group relative inline-block ${selected ? 'ring-2 ring-blue-500 ring-offset-1 rounded-lg' : ''}`}
-                style={{ ...(style ? parseInlineStyle(style) : {}) }}
+                className={`group relative inline-block leading-[0] ${selected ? 'ring-2 ring-blue-500 ring-offset-1 rounded-xl' : ''}`}
             >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                     src={src}
                     alt={alt}
-                    className="rounded-xl max-w-full"
+                    className="block rounded-xl max-w-full"
                     draggable={false}
                 />
 
-                {/* Floating toolbar */}
+                {/* Overlay — inset-0 now exactly matches the image dimensions */}
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center gap-2 rounded-xl bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto">
                     <button
                         type="button"
@@ -81,13 +85,11 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
     );
 }
 
-// Convert inline style string to React CSSProperties-like object for the wrapper div
 function parseInlineStyle(style: string): Record<string, string> {
     const result: Record<string, string> = {};
     style.split(';').forEach((rule) => {
         const [prop, val] = rule.split(':').map((s) => s.trim());
         if (prop && val) {
-            // Convert CSS property to camelCase
             const camel = prop.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
             result[camel] = val;
         }

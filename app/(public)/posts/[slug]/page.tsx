@@ -224,7 +224,7 @@ export default async function PostDetail({ params }: Props) {
 
                         {/* Content */}
                         <div
-                            className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-bold prose-a:text-blue-600 prose-img:rounded-xl"
+                            className="prose prose-lg max-w-none break-words dark:prose-invert prose-headings:font-bold prose-a:text-blue-600 prose-img:rounded-xl"
                             dangerouslySetInnerHTML={{ __html: post.content }}
                         />
 
