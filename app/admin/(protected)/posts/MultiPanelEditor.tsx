@@ -4,6 +4,7 @@ import {
     useState,
     useEffect,
     useRef,
+    useSyncExternalStore,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
@@ -58,8 +59,7 @@ export default function MultiPanelEditor({
     baseData,
 }: Props) {
     const router = useRouter();
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => setMounted(true), []);
+    const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
     const [openLangs, setOpenLangs] = useState<
         Locale[]
     >([defaultLang as Locale]);
