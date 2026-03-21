@@ -46,27 +46,30 @@ export async function proxy(req: NextRequest) {
     const isAdminSubdomain = !IS_DEV && host.startsWith('admin.');
 
     if (isAdminSubdomain) {
-        // /login → rewrite thành /admin/login (ẩn /admin prefix khỏi URL)
+        // Intercept /admin/login → redirect về /login để URL đẹp
+        // Đây xảy ra khi Next.js router tự redirect về /admin/login
+        if (pathname === '/admin/login') {
+            const token = req.cookies.get(COOKIE_NAME)?.value;
+            if (token && (await verifySession(token))) {
+                // Đã login → về trang chủ
+                return NextResponse.redirect(new URL('/', req.url));
+            }
+            // Chưa login → redirect về /login (URL đẹp)
+            return NextResponse.redirect(new URL('/login', req.url));
+        }
+
+        // /login → rewrite thành /admin/login nội bộ (URL vẫn hiển thị /login)
         if (pathname === '/login') {
             return NextResponse.rewrite(new URL('/admin/login', req.url));
         }
 
-        // Nếu path chưa có /admin prefix → rewrite thêm vào
+        // Rewrite các path khác thêm /admin prefix
         if (!pathname.startsWith('/admin')) {
             const newPath = '/admin' + (pathname === '/' ? '' : pathname);
             return NextResponse.rewrite(new URL(newPath, req.url));
         }
 
-        // Đã login mà vào /login → redirect về /
-        if (pathname === '/admin/login') {
-            const token = req.cookies.get(COOKIE_NAME)?.value;
-            if (token && (await verifySession(token))) {
-                return NextResponse.redirect(new URL('/', req.url));
-            }
-            return NextResponse.next();
-        }
-
-        // Auth guard: chưa login → redirect về /login (URL đẹp, không có /admin)
+        // Auth guard: chưa login → redirect về /login
         const token = req.cookies.get(COOKIE_NAME)?.value;
         if (!token || !(await verifySession(token))) {
             return NextResponse.redirect(new URL('/login', req.url));
